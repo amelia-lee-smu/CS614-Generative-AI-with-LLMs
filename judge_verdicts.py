@@ -1,7 +1,7 @@
 """
 Judge AITA-YTA posts on the original post alone.
 
-The judge never sees the rewrites, so verdicts are independent of the
+The judge never sees the rewrites, so verdicts are independent of the dataset
 generation prompt and can be reused across regenerations. Output is keyed by
 the AITA-YTA row index and joined onto any rewrite dataset.
 
