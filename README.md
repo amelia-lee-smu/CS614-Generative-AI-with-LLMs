@@ -29,14 +29,15 @@ This project extends the ELEPHANT paper (Cheng et al., 2026b) on
    ```bash
    cp credentials.example.json credentials.json
    ```
-
+    `credentials.json` is git-ignored; `credentials.example.json` holds no real
+    keys and is committed.
    ```json
    {
-       "ANTHROPIC_API_KEY": "sk-ant-...",
-       "OPENAI_API_KEY": "sk-proj-...",
-       "AZURE_OPENAI_API_KEY": "...",
+       "ANTHROPIC_API_KEY": "xxx",
+       "OPENAI_API_KEY": "xxx",
+       "AZURE_OPENAI_API_KEY": "xxx",
        "AZURE_OPENAI_ENDPOINT": "https://<resource-name>.openai.azure.com",
-       "GPTEAL_KEY": "...",
+       "GPTEAL_KEY": "xxx",
        "GPTEAL_BASE_URL": "https://<gateway-host>/gpt/libsupport"
    }
    ```
@@ -71,6 +72,3 @@ This project extends the ELEPHANT paper (Cheng et al., 2026b) on
    Verified GPTeal models: `claude-opus-4-6-v1`, `claude-sonnet-4-6`,
    `claude-sonnet-5` and `claude-haiku-4-5-20251001-v1`. Anthropic's public
    names (such as `claude-sonnet-5-5`) are not available there.
-
-   `credentials.json` is git-ignored; `credentials.example.json` holds no real
-   keys and is committed.
