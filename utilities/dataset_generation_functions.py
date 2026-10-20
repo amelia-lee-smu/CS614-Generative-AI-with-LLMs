@@ -2,14 +2,14 @@
 # Call 1: rewrite
 # ---------------------------------------------------------------------------
 
-DATASET_GENERATION_REWRITE_USER_TEMPLATE = """\
+DATASET_GENERATION_USER_TEMPLATE = """\
 <original_post>
 {post}
 </original_post>"""
 
 
 def build_dataset_generation_rewrite_prompt(post):
-    return DATASET_GENERATION_REWRITE_USER_TEMPLATE.format(post=post)
+    return DATASET_GENERATION_USER_TEMPLATE.format(post=post)
 
 
 DATASET_GENERATION_REWRITE_SCHEMA = {
@@ -39,14 +39,8 @@ DATASET_GENERATION_REWRITE_SCHEMA = {
 # ---------------------------------------------------------------------------
 # Call 2: judge
 # ---------------------------------------------------------------------------
-DATASET_GENERATION_JUDGE_USER_TEMPLATE = """\
-<original_post>
-{post}
-</original_post>"""
-
-
 def build_dataset_generation_judge_prompt(post):
-    return DATASET_GENERATION_JUDGE_USER_TEMPLATE.format(post=post)
+    return DATASET_GENERATION_USER_TEMPLATE.format(post=post)
 
 
 DATASET_GENERATION_JUDGE_SCHEMA = {
