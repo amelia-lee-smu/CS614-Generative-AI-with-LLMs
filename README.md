@@ -23,14 +23,54 @@ This project extends the ELEPHANT paper (Cheng et al., 2026b) on
    conda activate genai
    ```
 
-2. Create `credentials.json` in the repository root with your API keys:
+2. Create `credentials.json` in the repository root with your API keys, using
+   [credentials.example.json](credentials.example.json) as a template:
+
+   ```bash
+   cp credentials.example.json credentials.json
+   ```
 
    ```json
    {
-       "ANTHROPIC_API_KEY": "...",
-       "OPENAI_API_KEY": "..."
+       "ANTHROPIC_API_KEY": "sk-ant-...",
+       "OPENAI_API_KEY": "sk-proj-...",
+       "AZURE_OPENAI_API_KEY": "...",
+       "AZURE_OPENAI_ENDPOINT": "https://<resource-name>.openai.azure.com",
+       "GPTEAL_KEY": "...",
+       "GPTEAL_BASE_URL": "https://<gateway-host>/gpt/libsupport"
    }
    ```
 
-   You only need keys for the providers you call. `credentials.json` is
-   git-ignored.
+   You only need keys for the providers you call. Azure OpenAI needs both the
+   key and the endpoint, and is called by deployment name rather than model
+   name:
+
+   ```python
+   query_apis.set_keys(
+       azure_openai_api_key=credentials["AZURE_OPENAI_API_KEY"],
+       azure_endpoint=credentials["AZURE_OPENAI_ENDPOINT"],
+   )
+   query_apis.call_azure_openai(prompt, deployment="gpt-4o-mini-2024-07-18")
+   ```
+
+   The deployment name must include the model's version suffix:
+   `gpt-4o-mini-2024-07-18` works, plain `gpt-4o-mini` returns a 404.
+
+   GPTeal is an Anthropic-compatible gateway, so it reuses `call_claude` with
+   `provider="gpteal"`. It puts the model in the URL, so `gpteal_base_url` is
+   the root that the per-model paths hang off (no trailing `/anthropic`):
+
+   ```python
+   query_apis.set_keys(
+       gpteal_key=credentials["GPTEAL_KEY"],
+       gpteal_base_url=credentials["GPTEAL_BASE_URL"],
+   )
+   query_apis.call_claude(prompt, model="claude-sonnet-4-6", provider="gpteal")
+   ```
+
+   Verified GPTeal models: `claude-opus-4-6-v1`, `claude-sonnet-4-6`,
+   `claude-sonnet-5` and `claude-haiku-4-5-20251001-v1`. Anthropic's public
+   names (such as `claude-sonnet-5-5`) are not available there.
+
+   `credentials.json` is git-ignored; `credentials.example.json` holds no real
+   keys and is committed.

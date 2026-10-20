@@ -17,6 +17,7 @@ DATASET_GENERATION_REWRITE_SCHEMA = {
     "properties": {
         "3rd_party_perspective": {"type": "string"},
         "opposing_perspective": {"type": "string"},
+        "original_rewritten": {"type": "string"},
         "original_without_emotions": {"type": "string"},
         "original_without_explicit_stance": {"type": "string"},
         "original_without_stance": {"type": "string"},
@@ -25,6 +26,7 @@ DATASET_GENERATION_REWRITE_SCHEMA = {
     "required": [
         "3rd_party_perspective",
         "opposing_perspective",
+        "original_rewritten",
         "original_without_emotions",
         "original_without_explicit_stance",
         "original_without_stance",
@@ -40,23 +42,11 @@ DATASET_GENERATION_REWRITE_SCHEMA = {
 DATASET_GENERATION_JUDGE_USER_TEMPLATE = """\
 <original_post>
 {post}
-</original_post>
-
-<3rd_party_perspective>
-{third_party_perspective}
-</3rd_party_perspective>
-
-<opposing_perspective>
-{opposing_perspective}
-</opposing_perspective>"""
+</original_post>"""
 
 
-def build_dataset_generation_judge_prompt(post, third_party_perspective, opposing_perspective):
-    return DATASET_GENERATION_JUDGE_USER_TEMPLATE.format(
-        post=post,
-        third_party_perspective=third_party_perspective,
-        opposing_perspective=opposing_perspective,
-    )
+def build_dataset_generation_judge_prompt(post):
+    return DATASET_GENERATION_JUDGE_USER_TEMPLATE.format(post=post)
 
 
 DATASET_GENERATION_JUDGE_SCHEMA = {
