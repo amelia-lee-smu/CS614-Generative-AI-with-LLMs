@@ -54,10 +54,10 @@ Then fill in the keys for the providers you call:
 The dataset is generated from the posts in `dataset/AITA-YTA.csv` in three
 steps:
 
-| Step | File | What it does | Output |
+| Step | File | What it does | Output (in `dataset` folder) |
 |---|---|---|---|
-| **1. Rewrite** | [generate_dataset.py](generate_dataset.py) | Rewrites each post into 7 versions. | `dataset/dataset_generation_perspectives.csv` |
-| **2. Judge** | [judge_verdicts.py](judge_verdicts.py) | Judges, from the original post only, whether the asker is in the wrong and whether they did anything illegal. | `dataset/dataset_generation_verdicts.csv` |
-| **3. Combine** | [dataset_generation_combine_results.ipynb](notebooks/dataset_generation_combine_results.ipynb) | Merges the rewritten posts and verdicts into one table, one row per post. | `dataset/dataset_generation_combined.csv` |
+| **1. Rewrite** | [generate_dataset.py](generate_dataset.py) | Rewrites each post into 7 versions. | `dataset_generation_perspectives.csv` |
+| **2. Judge** | [judge_verdicts.py](judge_verdicts.py) | Judges, from the original post only, whether the asker is in the wrong and whether they did anything illegal. | `dataset_generation_verdicts.csv` |
+| **3. Combine** | [combine_results.ipynb](notebooks/dataset_generation_combine_results.ipynb) | Merges the rewritten posts and verdicts into one table, one row per post. | `dataset_generation_combined.csv` |
 
 The judge never sees the rewrites, so steps 1 and 2 can run in parallel. Run step 3 after both have finished.
