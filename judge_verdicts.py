@@ -56,7 +56,7 @@ def main():
     parser.add_argument("--rows", type=int, default=500)
     parser.add_argument("--start", type=int, default=0)
     parser.add_argument("--workers", type=int, default=20)
-    parser.add_argument("--out", default="dataset/verdicts.csv")
+    parser.add_argument("--out", default="dataset/dataset_generation_verdicts.csv")
     args = parser.parse_args()
 
     out_path = ROOT / args.out

@@ -1,74 +1,63 @@
 # Measuring and Mitigating Social Sycophancy in LLMs
 
-CS614 Generative AI with Large Language Models, Team 12.
+*CS614 Generative AI with Large Language Models · Team 12*
 
 This project extends the ELEPHANT paper (Cheng et al., 2026b) on
 **social sycophancy**, which has four sub-types:
-- **validation sycophancy**: validating the user's emotions and perspectives,
-  even when doing so is harmful.
-- **indirectness sycophancy**: giving indirect responses instead of clear
-  guidance.
-- **framing sycophancy**: adopting the user's framing without question, so the
-  user never gets the chance to correct flawed or problematic assumptions.
-- **moral sycophancy**: affirming whichever stance the user takes in a moral or
-  interpersonal conflict, instead of holding a consistent stance.
+
+| Sub-type | Description |
+|---|---|
+| **Validation** | Validating the user's emotions and perspectives, even when doing so is harmful. |
+| **Indirectness** | Giving indirect responses instead of clear guidance. |
+| **Framing** | Adopting the user's framing without question, so the user never gets the chance to correct flawed or problematic assumptions. |
+| **Moral** | Affirming whichever stance the user takes in a moral or interpersonal conflict, instead of holding a consistent stance. |
+
+---
 
 ## Installation
 
-1. Create and activate the `genai` conda environment from
-   [environment.yml](environment.yml):
+### 1. Create the conda environment
 
-   ```bash
-   conda env create -f environment.yml
-   conda activate genai
-   ```
+Create and activate the `genai` environment from
+[environment.yml](environment.yml):
 
-2. Create `credentials.json` in the repository root with your API keys, using
-   [credentials.example.json](credentials.example.json) as a template:
+```bash
+conda env create -f environment.yml
+conda activate genai
+```
 
-   ```bash
-   cp credentials.example.json credentials.json
-   ```
-    `credentials.json` is git-ignored; `credentials.example.json` holds no real
-    keys and is committed.
-   ```json
-   {
-       "ANTHROPIC_API_KEY": "xxx",
-       "OPENAI_API_KEY": "xxx",
-       "AZURE_OPENAI_API_KEY": "xxx",
-       "AZURE_OPENAI_ENDPOINT": "https://<resource-name>.openai.azure.com",
-       "GPTEAL_KEY": "xxx",
-       "GPTEAL_BASE_URL": "https://<gateway-host>/gpt/libsupport"
-   }
-   ```
+### 2. Add your API keys
 
-   You only need keys for the providers you call. Azure OpenAI needs both the
-   key and the endpoint, and is called by deployment name rather than model
-   name:
+Create `credentials.json` (git-ignored) in the repository root, using
+[credentials.example.json](credentials.example.json) as a template:
 
-   ```python
-   query_apis.set_keys(
-       azure_openai_api_key=credentials["AZURE_OPENAI_API_KEY"],
-       azure_endpoint=credentials["AZURE_OPENAI_ENDPOINT"],
-   )
-   query_apis.call_azure_openai(prompt, deployment="gpt-4o-mini-2024-07-18")
-   ```
+```bash
+cp credentials.example.json credentials.json
+```
 
-   The deployment name must include the model's version suffix:
-   `gpt-4o-mini-2024-07-18` works, plain `gpt-4o-mini` returns a 404.
+Then fill in the keys for the providers you call:
 
-   GPTeal is an Anthropic-compatible gateway, so it reuses `call_claude` with
-   `provider="gpteal"`. It puts the model in the URL, so `gpteal_base_url` is
-   the root that the per-model paths hang off (no trailing `/anthropic`):
+```json
+{
+    "ANTHROPIC_API_KEY": "xxx",
+    "OPENAI_API_KEY": "xxx",
+    "AZURE_OPENAI_API_KEY": "xxx",
+    "AZURE_OPENAI_ENDPOINT": "https://<resource-name>.openai.azure.com",
+    "GPTEAL_KEY": "xxx",
+    "GPTEAL_BASE_URL": "https://<gateway-host>/gpt/libsupport"
+}
+```
 
-   ```python
-   query_apis.set_keys(
-       gpteal_key=credentials["GPTEAL_KEY"],
-       gpteal_base_url=credentials["GPTEAL_BASE_URL"],
-   )
-   query_apis.call_claude(prompt, model="claude-sonnet-4-6", provider="gpteal")
-   ```
 
-   Verified GPTeal models: `claude-opus-4-6-v1`, `claude-sonnet-4-6`,
-   `claude-sonnet-5` and `claude-haiku-4-5-20251001-v1`. Anthropic's public
-   names (such as `claude-sonnet-5-5`) are not available there.
+## Dataset generation
+
+The dataset is generated from the posts in `dataset/AITA-YTA.csv` in three
+steps:
+
+| Step | File | What it does | Output |
+|---|---|---|---|
+| **1. Rewrite** | [generate_dataset.py](generate_dataset.py) | Rewrites each post into 7 versions. | `dataset/dataset_generation_perspectives.csv` |
+| **2. Judge** | [judge_verdicts.py](judge_verdicts.py) | Judges, from the original post only, whether the asker is in the wrong and whether they did anything illegal. | `dataset/dataset_generation_verdicts.csv` |
+| **3. Combine** | [dataset_generation_combine_results.ipynb](notebooks/dataset_generation_combine_results.ipynb) | Merges the rewritten posts and verdicts into one table, one row per post. | `dataset/dataset_generation_combined.csv` |
+
+The judge never sees the rewrites, so steps 1 and 2 can run in parallel. Run step 3 after both have finished.
