@@ -63,16 +63,49 @@ steps:
 The judge never sees the rewrites, so steps 1 and 2 can run in parallel. Run step 3 after both have finished.
 
 
-## Closed-source models
+## Models
 
-Each model below answered the same 11,902 queries (2,000 posts × 6 variants, minus the 98 variants that were empty in the dataset). Results are in `results/`, one `.jsonl` and one `.csv` per model.
+Each model is asked whether the asker is in the wrong, for every variant of each post, and
+returns a verdict (`asker_is_asshole`: 0 or 1) and a short explanation.
 
-| Family | Model | Release year |
-|---|---|---|
-| OpenAI (GPT-4o) | `gpt-4o-2024-08-06` | 2024 |
-| OpenAI (GPT-4.1) | `gpt-4-1-2025-04-14` | 2025 |
-| OpenAI (GPT-5) | `gpt-5-2025-08-07` | 2025 |
-| OpenAI (GPT-5.4) | `gpt-5-4-2026-03-05` | 2026 |
-| Anthropic (Claude Sonnet 4.5) | `claude-sonnet-4-5-20250929-v1` | 2025 |
-| Anthropic (Claude Sonnet 4.6) | `claude-sonnet-4-6` | 2026 |
-| Anthropic (Claude Sonnet 5) | `claude-sonnet-5` | 2026 |
+| Type | Family | Model | Release year | Run with | Variants |
+|---|---|---|---|---|---|
+| Closed | OpenAI (GPT-4o) | `gpt-4o-2024-08-06` | 2024 | [run_models_closed.py](run_models_closed.py) (Azure) | 8 |
+| Closed | OpenAI (GPT-4.1) | `gpt-4-1-2025-04-14` | 2025 | [run_models_closed.py](run_models_closed.py) (Azure) | 8 |
+| Closed | OpenAI (GPT-5) | `gpt-5-2025-08-07` | 2025 | [run_models_closed.py](run_models_closed.py) (Azure) | 8 |
+| Closed | OpenAI (GPT-5.4) | `gpt-5-4-2026-03-05` | 2026 | [run_models_closed.py](run_models_closed.py) (Azure) | 8 |
+| Closed | Google (Gemini 2.5 Flash) | `gemini-2-5-flash` | 2025 | [run_models_closed.py](run_models_closed.py) (GPTeal) | 8 |
+| Closed | Google (Gemini 3 Flash) | `gemini-3-flash-preview` | 2025 | [run_models_closed.py](run_models_closed.py) (GPTeal) | 8 |
+| Closed | Google (Gemini 3.5 Flash) | `gemini-3-5-flash` | 2026 | [run_models_closed.py](run_models_closed.py) (GPTeal) | 8 |
+| Open | Meta (Llama 2 7B) | `llama2:7b` | 2023 | [run_models.py](run_models.py) (Ollama) | 6 |
+| Open | Meta (Llama 3.1 8B) | `llama3.1:8b` | 2024 | [run_models.py](run_models.py) (Ollama) | 6 |
+| Open | Google (Gemma 7B) | `gemma:7b` | 2024 | [run_models.py](run_models.py) (Ollama) | 6 |
+| Open | Google (Gemma 4 E4B) | `gemma4:e4b` | 2026 | [run_models.py](run_models.py) (Ollama) | 6 |
+| Open | Alibaba (Qwen 1.5 7B) | `qwen:7b` | 2024 | [run_models.py](run_models.py) (Ollama) | 6 |
+| Open | Alibaba (Qwen 3.5 9B) | `qwen3.5:9b` | 2026 | [run_models.py](run_models.py) (Ollama) | 6 |
+
+The open-source models were run on 6 variants: the original post, `3rd_party_perspective`,
+`opposing_perspective`, `original_without_emotions`, `original_without_explicit_stance` and
+`original_without_both`. The closed-source models were also run on `original_without_stance` and
+`original_rewritten`, so comparisons across all 16 models use the 6 shared variants.
+
+### Results files
+
+| Folder | What it holds |
+|---|---|
+| `raw_results/` | Everything each model produced. Closed-source models: all 2,000 posts, as `<model>.jsonl` (every request, including failed attempts that were retried) and `<model>.csv` (one answer per post and variant). Open-source models: `<model>.jsonl` only, for the 1,000 selected posts. |
+| `results/` | One `<model>.csv` per model, with only the 1,000 posts in [selected_1000_posts.csv](selected_1000_posts.csv). This is the folder to analyse. |
+
+`results/` is built from `raw_results/` with [filter_results.py](scripts/filter_results.py), which
+never changes `raw_results/`:
+
+```bash
+python scripts/filter_results.py --select selected_1000_posts.csv
+```
+
+Each closed-source file in `results/` has 7,997 rows: 1,000 posts × 8 variants, minus 3 posts
+(450, 556 and 870) whose `original_rewritten` is empty in the dataset. Each open-source file has
+6,000 rows: 1,000 posts × 6 variants.
+
+Open-source model names contain a colon (`llama3.1:8b`); their files use an underscore instead
+(`results/llama3.1_8b.csv`).
