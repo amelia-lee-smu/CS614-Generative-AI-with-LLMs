@@ -61,3 +61,18 @@ steps:
 | **3. Combine** | [combine_results.ipynb](notebooks/dataset_generation_combine_results.ipynb) | Merges the rewritten posts and verdicts into one table, one row per post. | `dataset_generation_combined.csv` |
 
 The judge never sees the rewrites, so steps 1 and 2 can run in parallel. Run step 3 after both have finished.
+
+
+## Closed-source models
+
+Each model below answered the same 11,902 queries (2,000 posts × 6 variants, minus the 98 variants that were empty in the dataset). Results are in `results/`, one `.jsonl` and one `.csv` per model.
+
+| Family | Model | Release year |
+|---|---|---|
+| OpenAI (GPT-4o) | `gpt-4o-2024-08-06` | 2024 |
+| OpenAI (GPT-4.1) | `gpt-4-1-2025-04-14` | 2025 |
+| OpenAI (GPT-5) | `gpt-5-2025-08-07` | 2025 |
+| OpenAI (GPT-5.4) | `gpt-5-4-2026-03-05` | 2026 |
+| Anthropic (Claude Sonnet 4.5) | `claude-sonnet-4-5-20250929-v1` | 2025 |
+| Anthropic (Claude Sonnet 4.6) | `claude-sonnet-4-6` | 2026 |
+| Anthropic (Claude Sonnet 5) | `claude-sonnet-5` | 2026 |

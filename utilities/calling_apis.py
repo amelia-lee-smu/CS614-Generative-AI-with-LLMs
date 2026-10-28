@@ -2,6 +2,7 @@ import json
 
 import anthropic
 import openai
+import requests
 
 from settings import *
 
@@ -165,6 +166,88 @@ class QueryAPIs:
             raise ValueError(f"stop_reason={result['stop_reason']}")
         return json.loads(result["text"])
 
+    @staticmethod
+    def _to_gemini_schema(schema):
+        """
+        Convert a JSON schema to Gemini's dialect: no "additionalProperties",
+        and enums must be strings, so an integer enum becomes a min/max range.
+        """
+        if isinstance(schema, dict):
+            out = {k: QueryAPIs._to_gemini_schema(v) for k, v in schema.items() if k != "additionalProperties"}
+            if out.get("type") == "integer" and "enum" in out:
+                values = out.pop("enum")
+                out["minimum"], out["maximum"] = min(values), max(values)
+            return out
+        return schema
+
+    def call_gemini(
+        self,
+        prompt,
+        model,
+        system=None,
+        max_tokens=None,
+        temperature=None,
+        json_schema=None,
+        timeout=None,
+    ):
+        """
+        Send a single-turn prompt to a Gemini model through the GPTeal gateway.
+
+        model: gateway deployment name, e.g. "gemini-2-5-flash" (dashes, not dots).
+        max_tokens: cap on output tokens; Gemini counts its hidden thinking tokens too.
+        json_schema: forces JSON output. Gemini's schema dialect has no
+            "additionalProperties", so that key is dropped.
+        """
+        if self._gpteal_key is None:
+            raise ValueError(
+                "No GPTeal client set; call set_keys(gpteal_key=..., gpteal_base_url=...) first"
+            )
+        # Gemini lives under <gateway>/v2/<model>, next to (not under) the Claude route.
+        url = f"{self._gpteal_base_url.rsplit('/', 1)[0]}/v2/{model}"
+
+        generation_config = {}
+        if max_tokens is not None:
+            generation_config["maxOutputTokens"] = max_tokens
+        if temperature is not None:
+            generation_config["temperature"] = temperature
+        if json_schema is not None:
+            generation_config["responseMimeType"] = "application/json"
+            generation_config["responseSchema"] = self._to_gemini_schema(json_schema)
+
+        payload = {
+            "contents": [{"role": "user", "parts": [{"text": prompt}]}],
+            "generation_config": generation_config,
+        }
+        if system is not None:
+            payload["system_instruction"] = {"parts": [{"text": system}]}
+
+        response = requests.post(
+            url,
+            headers={"X-Merck-APIKey": self._gpteal_key},
+            json=payload,
+            timeout=timeout or REQUEST_TIMEOUT,
+        )
+        if not response.ok:
+            raise requests.HTTPError(f"{response.status_code}: {response.text[:300]}")
+        data = response.json()
+
+        # A streamed reply is a list of chunks; a normal one is a single object.
+        chunks = data if isinstance(data, list) else [data]
+        text = ""
+        stop_reason = None
+        for chunk in chunks:
+            for candidate in chunk.get("candidates", []):
+                parts = candidate.get("content", {}).get("parts", [])
+                text += "".join(p.get("text", "") for p in parts if not p.get("thought"))
+                stop_reason = candidate.get("finishReason") or stop_reason
+            if stop_reason is None:
+                stop_reason = chunk.get("promptFeedback", {}).get("blockReason")
+        return {
+            "text": text.strip(),
+            "model": chunks[0].get("modelVersion", model),
+            "stop_reason": stop_reason,
+        }
+
     def call_openai(
         self,
         prompt,
@@ -174,6 +257,7 @@ class QueryAPIs:
         max_tokens=None,
         reasoning_effort=None,
         temperature=None,
+        json_schema=None,
     ):
         """
         Send a single-turn prompt to an OpenAI model via Chat Completions, which
@@ -185,6 +269,10 @@ class QueryAPIs:
             and the model's own maximum applies.
         reasoning_effort: only for reasoning models; leave as None otherwise.
         temperature: not accepted by reasoning models; leave as None for those.
+        json_schema: if given, the reply is constrained to JSON matching this
+            schema (structured outputs, strict). The JSON is returned as a
+            string in "text". Strict mode needs every property listed in
+            "required" and "additionalProperties": false.
         """
         if self._openai_client is None:
             raise ValueError("No OpenAI API key set; call set_keys(openai_api_key=...) first")
@@ -197,6 +285,7 @@ class QueryAPIs:
             max_tokens=max_tokens,
             reasoning_effort=reasoning_effort,
             temperature=temperature,
+            json_schema=json_schema,
         )
 
     def call_azure_openai(
@@ -208,6 +297,7 @@ class QueryAPIs:
         max_tokens=None,
         reasoning_effort=None,
         temperature=None,
+        json_schema=None,
     ):
         """
         Send a single-turn prompt to an Azure OpenAI deployment.
@@ -229,6 +319,7 @@ class QueryAPIs:
             max_tokens=max_tokens,
             reasoning_effort=reasoning_effort,
             temperature=temperature,
+            json_schema=json_schema,
         )
 
     def _call_chat_completions(
@@ -241,6 +332,7 @@ class QueryAPIs:
         max_tokens,
         reasoning_effort,
         temperature,
+        json_schema=None,
     ):
         messages = []
         if system is not None:
@@ -257,6 +349,11 @@ class QueryAPIs:
             kwargs["reasoning_effort"] = reasoning_effort
         if temperature is not None:
             kwargs["temperature"] = temperature
+        if json_schema is not None:
+            kwargs["response_format"] = {
+                "type": "json_schema",
+                "json_schema": {"name": "response", "strict": True, "schema": json_schema},
+            }
 
         response = client.with_options(max_retries=max_retries).chat.completions.create(**kwargs)
 
