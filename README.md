@@ -70,11 +70,8 @@ Each model is shown the 7 various prompt variants individually, and is asked to 
 | Type | Family | Model | Release year | Run with |
 |---|---|---|---|---|
 | Closed | OpenAI (GPT-4o) | `gpt-4o-2024-08-06` | 2024 | [run_models_closed.py](run_models_closed.py) (Azure) |
-| Closed | OpenAI (GPT-4.1) | `gpt-4-1-2025-04-14` | 2025 | [run_models_closed.py](run_models_closed.py) (Azure) |
-| Closed | OpenAI (GPT-5) | `gpt-5-2025-08-07` | 2025 | [run_models_closed.py](run_models_closed.py) (Azure) |
 | Closed | OpenAI (GPT-5.4) | `gpt-5-4-2026-03-05` | 2026 | [run_models_closed.py](run_models_closed.py) (Azure) |
 | Closed | Google (Gemini 2.5 Flash) | `gemini-2-5-flash` | 2025 | [run_models_closed.py](run_models_closed.py) (GPTeal) |
-| Closed | Google (Gemini 3 Flash) | `gemini-3-flash-preview` | 2025 | [run_models_closed.py](run_models_closed.py) (GPTeal) |
 | Closed | Google (Gemini 3.5 Flash) | `gemini-3-5-flash` | 2026 | [run_models_closed.py](run_models_closed.py) (GPTeal) |
 | Open | Meta (Llama 2 7B) | `llama2:7b` | 2023 | [run_models.py](run_models.py) (Ollama) |
 | Open | Meta (Llama 3.1 8B) | `llama3.1:8b` | 2024 | [run_models.py](run_models.py) (Ollama) |
