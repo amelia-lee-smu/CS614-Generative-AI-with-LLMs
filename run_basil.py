@@ -2,7 +2,7 @@
 """
 BASIL step 3 (docs/basil_implementation_plan.md): elicit the 7 probabilities
 (paper §3.1, §3.2.1; Appendix D.2.1) for every selected post, in each of the 8
-texts (original + 7 variants), from ONE model.
+texts (the original + 6 variants), from ONE model.
 
     python run_basil.py --provider azure --model gpt-4o-2024-08-06 --chunk-size 5 --chunk 0     # smoke test
     python run_basil.py --provider azure --model gpt-4o-2024-08-06                              # direct probing
@@ -63,7 +63,7 @@ def build_tasks(df, actions, evidence, texts, k, seed):
         for t in texts:
             situation = row.get(t)
             if not isinstance(situation, str) or not situation.strip():
-                continue  # e.g. the 3 posts with no original_rewritten
+                continue  # a variant with no text for this post
             for q in QUANTITIES:
                 prompt = build_elicitation_prompt(q, situation, actions[idx], evidence[idx], agent)
                 for s in range(k):

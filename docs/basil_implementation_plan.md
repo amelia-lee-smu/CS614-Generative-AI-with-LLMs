@@ -26,7 +26,7 @@ Status: base code written and checked offline (no API calls yet).
 its belief beyond what the same opinion from a third party does (BASIL's
 descriptive metric)? How far does that shift push it from its own
 Bayesian-rational belief (BASIL's normative metric)? And how do both change
-across our **7 variants** of each post?
+across the **7 texts** of each post (the original post and its 6 rewritten variants)?
 
 The last question is our extension. The paper's experiment varies only
 *who holds the opinion*. Ours also varies *how the story is told*: perspective,
@@ -66,16 +66,15 @@ App. D.2.1 (M§7.1) as the base.
 
 ### 2.1 The variants
 
-Each post is scored once per text. The 7 variants are the rewritten versions
-in `dataset/dataset_generation_combined.csv`, and the original post is scored
-alongside them as the reference.
+Each post is scored once per text. The 7 texts are the original post and its 6
+rewritten versions in `dataset/dataset_generation_combined.csv`. `original_rewritten`
+is not used.
 
 | Column | Narrator | What it varies |
 |---|---|---|
 | `prompt` (original, reference) | The poster, first person | — |
 | `3rd_party_perspective` | An uninvolved observer | Perspective |
 | `opposing_perspective` | The other main party | Perspective |
-| `original_rewritten` | The poster; LLM-rewritten, nothing removed | Control for LLM rewriting style |
 | `original_without_emotions` | The poster | Emotion removed |
 | `original_without_explicit_stance` | The poster | Explicit stance removed |
 | `original_without_stance` | The poster | All stance removed |
@@ -99,7 +98,7 @@ differences in emotion, stance and perspective our variants exist to test.
 The user sentence "I believe that [action] is moral…" means different things
 depending on the variant's narrator:
 
-- **Poster-narrated variants** (`prompt`, `original_rewritten`, the four
+- **Poster-narrated variants** (`prompt` and the four
   removal variants): the user is defending their own action. This is the AITA
   situation.
 - **`3rd_party_perspective`:** the user is the observer vouching for a friend.
@@ -118,9 +117,8 @@ cases test different things.
 - **Sample:** **[Deviation]** all 1000 posts, with no subsampling. The paper
   uses 500 items per task, sampled with seed 42 (App. C; M§4). We use every
   post we already have model answers for, which gives more statistical power.
-- **Texts:** 1000 posts × 8 texts (the original plus 7 variants) = 8,000
-  situations. Some `original_rewritten` texts are empty (3 of the 1000 posts).
-  Missing texts are skipped and reported.
+- **Texts:** 1000 posts × 7 texts (the original plus 6 variants) = 7,000
+  situations. Missing texts are skipped and reported.
 
 ## 4. Pipeline
 
@@ -252,7 +250,7 @@ boys' and top 10 girls' names in the US.
   and are marked "no greedy" in every table. A 5-row smoke test per model
   decides which models fall into this group.
 - **Why this design:** running the 5-sample method on every model would cost
-  2.8 M calls. This design costs about 1.12 M. It keeps the paper's main
+  2.45 M calls. This design costs about 0.98 M. It keeps the paper's main
   method (greedy direct probing) wherever a model allows it. The
   robustness check measures our one unavoidable deviation, and mirrors the
   paper, which reports both methods (Table 3).
@@ -261,7 +259,7 @@ boys' and top 10 girls' names in the US.
   transition), rerun every "no greedy" model with 5 samples. A single call
   isn't reliable for them.
 - **Cheaper fallback:** run the robustness check on `prompt` and
-  `original_rewritten` only.
+  `original_without_both` only.
 - **[Our choice]** The k = 5 samples are combined by their **mean**, giving
   one probability per item and quantity before any metric is computed. The
   paper doesn't specify (M§6). We also store every sample so the choice can
@@ -281,11 +279,11 @@ boys' and top 10 girls' names in the US.
   larger limit.
 
 **Call budget.**
-- Direct probing, one model: 1000 posts × 8 texts × 7 quantities = **56,000
-  calls**. All 10 models: 560,000.
-- Multiple samples, one model: × 5 = 280,000 calls. The 2 robustness models:
-  560,000.
-- Total: about 1.12 M calls.
+- Direct probing, one model: 1000 posts × 7 texts × 7 quantities = **49,000
+  calls**. All 10 models: 490,000.
+- Multiple samples, one model: × 5 = 245,000 calls. The 2 robustness models:
+  490,000.
+- Total: about 0.98 M calls.
 
 **[Our choice]** Run it in stages:
 1. **Pilot:** 50 posts, 2 models (one OpenAI, one Claude), direct probing,
@@ -353,19 +351,18 @@ from the same model.
 
 | Comparison | What it tests |
 |---|---|
-| LOC_user(`prompt`) − LOC_user(`original_rewritten`) | Whether LLM rewriting alone changes sycophancy. It is the control for every row below. |
-| LOC_user(`original_rewritten`) − LOC_user(`original_without_emotions`) | Effect of removing emotion |
-| LOC_user(`original_rewritten`) − LOC_user(`original_without_explicit_stance`) | Effect of removing explicit stance |
-| LOC_user(`original_rewritten`) − LOC_user(`original_without_stance`) | Effect of removing all stance |
-| LOC_user(`original_rewritten`) − LOC_user(`original_without_both`) | Effect of removing both |
+| LOC_user(`prompt`) − LOC_user(`original_without_emotions`) | Effect of removing emotion |
+| LOC_user(`prompt`) − LOC_user(`original_without_explicit_stance`) | Effect of removing explicit stance |
+| LOC_user(`prompt`) − LOC_user(`original_without_stance`) | Effect of removing all stance |
+| LOC_user(`prompt`) − LOC_user(`original_without_both`) | Effect of removing both |
 | LOC_user(`prompt`) − LOC_user(`3rd_party_perspective`) | Poster defending themselves vs an observer vouching |
 | LOC_user(`prompt`) − LOC_user(`opposing_perspective`) | Self-interested vs against-interest opinion |
 | Abstract P̂(X\|E) across texts, as log odds | **Narrator effect without any stated opinion.** How much the telling alone moves the belief. |
 
 - Each comparison gets a paired Wilcoxon test over posts.
-- **[Our choice]** The removal variants are compared against
-  `original_rewritten`, not `prompt`. Both are LLM-written, so rewriting
-  style is held constant (the reason `original_rewritten` exists).
+- **[Our choice]** Every variant is compared against the original `prompt`. The
+  original is human-written and the variants are LLM-written, so a difference
+  may partly reflect rewriting style, which we don't control for.
 - These are not part of BASIL. Label them as our extension in the report.
 
 **Code:** `scripts/basil_metrics.py` reads the step 3 JSONL. It writes one
@@ -416,7 +413,7 @@ that has them. Steps 1 and 4 need no API calls.
 
 1. **Template check:** print the 7 assembled prompts for 3 posts and compare
    them line by line with App. D.2.1.
-2. **Smoke test:** 5 posts × 8 texts × 7 quantities on one model. Check the
+2. **Smoke test:** 5 posts × 7 texts × 7 quantities on one model. Check the
    parse rate (target: above 99%), and the share of answers above 1 (the
    percent scale).
 3. **Sanity checks:**
@@ -436,15 +433,15 @@ that has them. Steps 1 and 4 need no API calls.
 | Models refuse or add text | Parse failures | Regex parsing, retries, report failure rates |
 | Round-number answers (50, 70, 90) | Lumpy LOC | The multiple-samples method; report medians alongside means |
 | No greedy decoding for some models | Not the paper's direct probing | Flag those models; use multiple samples |
-| Cost (56,000 calls per model for direct probing; about 1.12 M in total) | Budget | Staged pilot; multiple samples on 2 models only, with a cheaper fallback |
+| Cost (49,000 calls per model for direct probing; about 0.98 M in total) | Budget | Staged pilot; multiple samples on 2 models only, with a cheaper fallback |
 | The paper's code is unreleased | Our choices may differ from theirs | Every choice is marked in this document |
 
 ## 10. Decisions
 
 Decided:
 
-1. **Texts:** the 7 rewritten variants plus the original `prompt` as the
-   reference, so 8 texts per post.
+1. **Texts:** the original `prompt` plus its 6 rewritten variants, so 7 texts
+   per post. `original_rewritten` is not used.
 2. **Sample size:** all 1000 posts (see 3).
 3. **X wording:** the paper's "is moral", unchanged (App. D.2).
 4. **Methods:** direct probing on all 10 models, plus the 5-sample method on

@@ -22,7 +22,6 @@ BASIL_TEXTS = [
     "prompt",
     "3rd_party_perspective",
     "opposing_perspective",
-    "original_rewritten",
     "original_without_emotions",
     "original_without_explicit_stance",
     "original_without_stance",

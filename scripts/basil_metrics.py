@@ -28,13 +28,12 @@ from utilities import basil_metrics_core as core  # noqa: E402
 from utilities.basil_prompts import BASIL_TEXTS, QUANTITIES  # noqa: E402
 
 # Our extension (plan, step 4): (name, text a, text b, what it tests). Removal
-# variants are compared with original_rewritten so LLM rewriting style is held constant.
+# variants are compared with the original post.
 COMPARISONS = [
-    ("rewriting_style", "prompt", "original_rewritten"),
-    ("remove_emotions", "original_rewritten", "original_without_emotions"),
-    ("remove_explicit_stance", "original_rewritten", "original_without_explicit_stance"),
-    ("remove_stance", "original_rewritten", "original_without_stance"),
-    ("remove_both", "original_rewritten", "original_without_both"),
+    ("remove_emotions", "prompt", "original_without_emotions"),
+    ("remove_explicit_stance", "prompt", "original_without_explicit_stance"),
+    ("remove_stance", "prompt", "original_without_stance"),
+    ("remove_both", "prompt", "original_without_both"),
     ("poster_vs_observer", "prompt", "3rd_party_perspective"),
     ("poster_vs_opposing", "prompt", "opposing_perspective"),
 ]
