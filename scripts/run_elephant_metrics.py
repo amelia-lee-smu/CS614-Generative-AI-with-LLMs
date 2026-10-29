@@ -44,6 +44,7 @@ Usage:
 
 Safe to stop (Ctrl+C): queued calls are cancelled, the few already running finish,
 and the CSV is rebuilt. Re-run the same command to continue; finished scores are skipped.
+Each API call scores up to 5 answers for the same metric by default.
 """
 
 import argparse
@@ -63,9 +64,7 @@ from utilities.calling_apis import QueryAPIs  # noqa: E402
 from utilities.elephant_sycophancy_metric import (  # noqa: E402
     ELEPHANT_FRAMING_PROMPT,
     ELEPHANT_INDIRECTNESS_PROMPT,
-    ELEPHANT_METRIC_SCHEMA,
     ELEPHANT_VALIDATION_PROMPT,
-    build_elephant_metric_prompt,
 )
 from utilities.utilities import load_credentials  # noqa: E402
 from values import (  # noqa: E402
@@ -165,43 +164,100 @@ def load_done(path: Path) -> set:
     return done
 
 
-def run_task(query_apis, idx, variant, metric, question, response, answer_model, args):
+def build_batch_schema(batch_size):
+    return {
+        "type": "object",
+        "properties": {
+            "results": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "id": {"type": "integer", "enum": list(range(batch_size))},
+                        "score": {"type": "integer", "enum": [0, 1]},
+                    },
+                    "required": ["id", "score"],
+                    "additionalProperties": False,
+                },
+            },
+        },
+        "required": ["results"],
+        "additionalProperties": False,
+    }
+
+
+def build_batch_prompt(batch):
+    items = [
+        {"id": item_id, "question": task[3], "response": task[4]}
+        for item_id, task in enumerate(batch)
+    ]
+    return (
+        "Score each item independently. Return one result for every item, using its id "
+        "to associate the score with the item. The scoring criteria are in the system "
+        "instructions.\n\n"
+        + json.dumps(items, ensure_ascii=False)
+    )
+
+
+def run_batch(query_apis, batch, metric, answer_model, args):
     start = time.time()
     last_err = None
     for attempt in range(args.retries):
         try:
             result = query_apis.call_claude_for_json(
-                build_elephant_metric_prompt(question=question, response=response),
+                build_batch_prompt(batch),
                 model=args.judge_model,
-                json_schema=ELEPHANT_METRIC_SCHEMA,
-                system=METRIC_PROMPTS[metric],
+                json_schema=build_batch_schema(len(batch)),
+                system=(
+                    METRIC_PROMPTS[metric]
+                    + "\n\nScore every item independently using the criterion above. "
+                    "Return the scores in the required JSON results array, with each "
+                    "item's id and its 0 or 1 score."
+                ),
                 effort=args.effort,
                 provider=args.provider,
                 timeout=args.timeout,
             )
-            return {
-                INDEX: idx,
-                VARIANT: variant,
-                "metric": metric,
-                ANSWER_MODEL: answer_model,
-                "judge_model": args.judge_model,
-                "score": result["score"],
-                "seconds": round(time.time() - start, 2),
-                "error": None,
-            }
+            scores = {}
+            for item in result["results"]:
+                item_id, score = item["id"], item["score"]
+                if type(item_id) is not int or type(score) is not int or score not in (0, 1):
+                    raise ValueError("Batch response contains an invalid id or score")
+                if item_id in scores:
+                    raise ValueError(f"Batch response contains duplicate id {item_id}")
+                scores[item_id] = score
+            if set(scores) != set(range(len(batch))):
+                raise ValueError("Batch response does not contain exactly one score per item")
+            elapsed = round(time.time() - start, 2)
+            return [
+                {
+                    INDEX: task[0],
+                    VARIANT: task[1],
+                    "metric": metric,
+                    ANSWER_MODEL: answer_model,
+                    "judge_model": args.judge_model,
+                    "score": scores[item_id],
+                    "seconds": elapsed,
+                    "error": None,
+                }
+                for item_id, task in enumerate(batch)
+            ]
         except Exception as e:  # noqa: BLE001
             last_err = f"{type(e).__name__}: {e}"
             time.sleep(2 * (attempt + 1))
-    return {
-        INDEX: idx,
-        VARIANT: variant,
-        "metric": metric,
-        ANSWER_MODEL: answer_model,
-        "judge_model": args.judge_model,
-        "score": None,
-        "seconds": round(time.time() - start, 2),
-        "error": last_err,
-    }
+    return [
+        {
+            INDEX: task[0],
+            VARIANT: task[1],
+            "metric": metric,
+            ANSWER_MODEL: answer_model,
+            "judge_model": args.judge_model,
+            "score": None,
+            "seconds": round(time.time() - start, 2),
+            "error": last_err,
+        }
+        for task in batch
+    ]
 
 
 def pivot_answers(answers: pd.DataFrame) -> pd.DataFrame:
@@ -283,9 +339,13 @@ def main():
     p.add_argument("--effort", default=ELEPHANT_JUDGE_EFFORT,
                    help="Judge effort (low, medium, high, xhigh, max).")
     p.add_argument("--workers", type=int, default=8, help="Concurrent requests.")
+    p.add_argument("--batch-size", type=int, default=5,
+                   help="Answers per API call for the same metric.")
     p.add_argument("--timeout", type=int, default=120)
     p.add_argument("--retries", type=int, default=2)
     args = p.parse_args()
+    if args.batch_size < 1:
+        p.error("--batch-size must be at least 1")
 
     # paths are relative to the repository root, like the other scripts
     answers_path = ROOT / args.answers
@@ -332,7 +392,8 @@ def main():
             continue
         for metric in args.metrics:
             tasks_all.append((idx, variant, metric, question, row[ANSWER_EXPLANATION]))
-    print(f"{len(answers)} answers x {len(args.metrics)} metrics -> {len(tasks_all)} judge calls"
+    print(f"{len(answers)} answers x {len(args.metrics)} metrics -> "
+          f"{len(tasks_all)} score items"
           + (f" ({n_no_question} answers skipped: no question text in {args.csv})" if n_no_question else ""))
 
     out_dir = ROOT / args.out_dir
@@ -341,8 +402,16 @@ def main():
     csv_path = out_dir / f"{safe_name(answer_model)}__elephant.csv"
     done = load_done(out_path)
     todo = [t for t in tasks_all if (t[0], t[1], t[2]) not in done]
+    batches = []
+    for metric in args.metrics:
+        metric_tasks = [task for task in todo if task[2] == metric]
+        batches.extend(
+            (metric, metric_tasks[start:start + args.batch_size])
+            for start in range(0, len(metric_tasks), args.batch_size)
+        )
     print(f"=== judge {args.judge_model} ({args.provider}): {len(tasks_all) - len(todo)} of these "
-          f"already done, {len(todo)} to run -> {out_path}")
+          f"already done, {len(todo)} score items in {len(batches)} API calls "
+          f"(batch size {args.batch_size}) -> {out_path}")
 
     interrupted = False
     if todo:
@@ -355,13 +424,16 @@ def main():
 
             def save(fut):
                 nonlocal n_err
-                rec = fut.result()
-                n_err += bool(rec["error"])
-                fout.write(json.dumps(rec, ensure_ascii=False) + "\n")
+                records = fut.result()
+                n_err += sum(bool(record["error"]) for record in records)
+                for record in records:
+                    fout.write(json.dumps(record, ensure_ascii=False) + "\n")
                 fout.flush()
 
-            futures = [ex.submit(run_task, query_apis, i, v, m, q, r, answer_model, args)
-                       for i, v, m, q, r in todo]
+            futures = [
+                ex.submit(run_batch, query_apis, batch, metric, answer_model, args)
+                for metric, batch in batches
+            ]
             saved = set()
             try:
                 iterator = as_completed(futures)
