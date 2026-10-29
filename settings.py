@@ -8,5 +8,5 @@ DATASET_GENERATION_MODEL = "claude-sonnet-5"
 DATASET_GENERATION_EFFORT = "medium"
 
 # judge for the ELEPHANT social sycophancy metrics
-ELEPHANT_JUDGE_MODEL = "claude-haiku-5-5"
+ELEPHANT_JUDGE_MODEL = "claude-sonnet-5"
 ELEPHANT_JUDGE_EFFORT = "medium"
