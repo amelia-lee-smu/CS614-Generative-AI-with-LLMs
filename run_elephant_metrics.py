@@ -5,7 +5,14 @@ Score ONE model's answers on ELEPHANT's social sycophancy metrics (Cheng et al.,
 Reads a results file written by run_models.py / run_models_closed.py (one row per
 (index, variant)), looks up the question each answer was given in
 dataset_generation_combined.csv, and asks an LLM judge to score the answer's
-explanation on each metric. Every score is 0 or 1, where 1 = sycophantic:
+explanation on each metric. Only these 7 variants are scored (original_rewritten
+is not):
+
+    prompt (the original post), 3rd_party_perspective, opposing_perspective,
+    original_without_emotions, original_without_explicit_stance,
+    original_without_stance, original_without_both
+
+Every score is 0 or 1, where 1 = sycophantic:
 
     validation      1 = emotionally validating
     indirectness    1 = uses suggestive (indirect) language
@@ -21,7 +28,9 @@ Output, in --out-dir (default evaluation/):
     <model>__elephant.jsonl   one line per (index, variant, metric); finished
                               ones are skipped on re-run, failed ones retried
     <model>__elephant.csv     one row per scored post: index, model, the dataset's
-                              columns, the model's <variant>_asker_is_asshole and
+                              columns (minus ytanta, original_rewritten,
+                              verdict_reasoning and asker_verdict), the model's
+                              <variant>_asker_is_asshole and
                               <variant>_explanation, then a <variant>_<metric>
                               column for each score; rebuilt from the .jsonl at
                               the end of every run
@@ -31,13 +40,13 @@ Usage:
     python run_elephant_metrics.py --answers results/gpt-4o-2024-08-06.csv                            # ALL rows
     for f in results/*.csv; do python run_elephant_metrics.py --answers "$f"; done                   # every model
 
-Safe to stop (Ctrl+C) and re-run: finished scores are skipped.
+Safe to stop (Ctrl+C): queued calls are cancelled, the few already running finish,
+and the CSV is rebuilt. Re-run the same command to continue; finished scores are skipped.
 """
 
 import argparse
 import json
 import sys
-import threading
 import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
@@ -45,7 +54,7 @@ from pathlib import Path
 import pandas as pd
 
 sys.path.append(str(Path(__file__).parent))
-from run_models import ALL_VARIANTS, DEFAULT_VARIANTS, safe_name  # noqa: E402
+from run_models import safe_name  # noqa: E402
 from settings import ELEPHANT_JUDGE_EFFORT, ELEPHANT_JUDGE_MODEL  # noqa: E402
 from utilities.calling_apis import QueryAPIs  # noqa: E402
 from utilities.elephant_sycophancy_metric import (  # noqa: E402
@@ -60,11 +69,22 @@ from values import (  # noqa: E402
     ANSWER_EXPLANATION,
     ANSWER_IS_ASSHOLE,
     ANSWER_MODEL,
+    ASKER_VERDICT,
     FRAMING,
     INDEX,
     INDIRECTNESS,
+    OPPOSING_QUESTION,
+    ORIG_NO_BOTH_QUESTION,
+    ORIG_NO_EMOTIONS_QUESTION,
+    ORIG_NO_EXPLICIT_STANCE_QUESTION,
+    ORIG_NO_STANCE_QUESTION,
+    ORIG_POST,
+    ORIG_REWRITTEN_QUESTION,
+    THIRD_PARTY_QUESTION,
     VALIDATION,
     VARIANT,
+    VERDICT_REASONING,
+    YTANTA,
 )
 
 try:
@@ -78,6 +98,23 @@ METRIC_PROMPTS = {
     INDIRECTNESS: ELEPHANT_INDIRECTNESS_PROMPT,
     FRAMING: ELEPHANT_FRAMING_PROMPT,
 }
+
+# the only variants that are scored; each is also the dataset column holding its question
+VARIANTS = [
+    ORIG_POST,
+    THIRD_PARTY_QUESTION,
+    OPPOSING_QUESTION,
+    ORIG_NO_EMOTIONS_QUESTION,
+    ORIG_NO_EXPLICIT_STANCE_QUESTION,
+    ORIG_NO_STANCE_QUESTION,
+    ORIG_NO_BOTH_QUESTION,
+]
+
+# columns every results file needs
+ANSWER_COLUMNS = [INDEX, ANSWER_MODEL, VARIANT, ANSWER_IS_ASSHOLE, ANSWER_EXPLANATION]
+
+# dataset columns left out of the combined CSV
+DATASET_COLUMNS_TO_DROP = [YTANTA, ORIG_REWRITTEN_QUESTION, VERDICT_REASONING, ASKER_VERDICT]
 
 
 def build_client(provider):
@@ -99,6 +136,10 @@ def load_answers(path: Path) -> pd.DataFrame:
         df = pd.read_json(path, lines=True, dtype={INDEX: str})
     else:
         df = pd.read_csv(path)
+    # fail early if the file isn't a results file
+    missing = [c for c in ANSWER_COLUMNS if c not in df.columns]
+    if missing:
+        raise SystemExit(f"columns not in {path}: {missing}")
     df[INDEX] = df[INDEX].astype(str)
     # .jsonl files can hold failed attempts and their later retries; keep the last good one.
     df = df[df[ANSWER_EXPLANATION].notna()]
@@ -225,7 +266,8 @@ def main():
     p.add_argument("--csv", default="dataset/dataset_generation_combined.csv",
                    help="Dataset with the question text for each variant.")
     p.add_argument("--out-dir", default="evaluation")
-    p.add_argument("--variants", nargs="+", default=DEFAULT_VARIANTS, choices=ALL_VARIANTS)
+    p.add_argument("--variants", nargs="+", default=VARIANTS, choices=VARIANTS,
+                   help="Variants to score (default: all 7). Only these 7 can be scored.")
     p.add_argument("--metrics", nargs="+", default=list(METRIC_PROMPTS), choices=list(METRIC_PROMPTS))
     p.add_argument("--chunk", type=int, default=None,
                    help="Which chunk of posts to score (0 = first). Omit to score ALL posts.")
@@ -254,6 +296,11 @@ def main():
     dataset = pd.read_csv(args.csv)
     if INDEX not in dataset.columns:
         dataset[INDEX] = range(len(dataset))
+    # fail early if a question column isn't in the dataset
+    missing = [v for v in args.variants if v not in dataset.columns]
+    if missing:
+        raise SystemExit(f"question columns not in {args.csv}: {missing}")
+    dataset = dataset.drop(columns=DATASET_COLUMNS_TO_DROP, errors="ignore")
     dataset[INDEX] = dataset[INDEX].astype(str)
     questions = dataset.set_index(INDEX)
 
@@ -291,28 +338,53 @@ def main():
     print(f"=== judge {args.judge_model} ({args.provider}): {len(tasks_all) - len(todo)} of these "
           f"already done, {len(todo)} to run -> {out_path}")
 
+    interrupted = False
     if todo:
         query_apis = build_client(args.provider)
-        lock = threading.Lock()
         n_err = 0
-        with open(out_path, "a", encoding="utf-8") as fout, \
-                ThreadPoolExecutor(max_workers=args.workers) as ex:
-            futures = [ex.submit(run_task, query_apis, i, v, m, q, r, answer_model, args)
-                       for i, v, m, q, r in todo]
-            iterator = as_completed(futures)
-            if tqdm:
-                iterator = tqdm(iterator, total=len(futures), desc=answer_model)
-            for fut in iterator:
+        # not a `with` block: on exit it would wait for every queued call, so Ctrl+C
+        # would keep calling the API until all of them had run
+        ex = ThreadPoolExecutor(max_workers=args.workers)
+        with open(out_path, "a", encoding="utf-8") as fout:
+
+            def save(fut):
+                nonlocal n_err
                 rec = fut.result()
                 n_err += bool(rec["error"])
-                with lock:
-                    fout.write(json.dumps(rec, ensure_ascii=False) + "\n")
-                    fout.flush()
-        print(f"{answer_model} finished. Request errors: {n_err} (re-run to retry).")
+                fout.write(json.dumps(rec, ensure_ascii=False) + "\n")
+                fout.flush()
+
+            futures = [ex.submit(run_task, query_apis, i, v, m, q, r, answer_model, args)
+                       for i, v, m, q, r in todo]
+            saved = set()
+            try:
+                iterator = as_completed(futures)
+                if tqdm:
+                    iterator = tqdm(iterator, total=len(futures), desc=answer_model)
+                for fut in iterator:
+                    save(fut)
+                    saved.add(fut)
+            except KeyboardInterrupt:
+                interrupted = True
+                print(f"\nStopping: cancelled the queued judge calls; waiting for the "
+                      f"{args.workers} or fewer already running to finish...")
+            finally:
+                # drop every call that hasn't started; the running ones finish on their own
+                ex.shutdown(wait=True, cancel_futures=True)
+            # keep the calls that finished during the shutdown, so they aren't paid for twice
+            for fut in futures:
+                if fut not in saved and fut.done() and not fut.cancelled():
+                    save(fut)
+        if not interrupted:
+            print(f"{answer_model} finished. Request errors: {n_err} (re-run to retry).")
 
     if out_path.exists():
         n_rows = write_wide_csv(out_path, csv_path, all_answers, dataset)
         print(f"Wrote {n_rows} posts -> {csv_path}")
+
+    if interrupted:
+        print("Stopped. Saved scores are kept; re-run the same command to continue.")
+        raise SystemExit(130)
 
 
 if __name__ == "__main__":

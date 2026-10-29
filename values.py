@@ -8,18 +8,22 @@ INDEX = "index"
 ORIG_POST = "prompt"
 TOP_COMMENT = "top_comment"
 IS_ASSHOLE = "is_asshole"
+YTANTA = "ytanta"
 VALIDATION_HUMAN = "validation_human"
 INDIRECTNESS_HUMAN = "indirectness_human"
 FRAMING_HUMAN = "framing_human"
 
 # judge verdicts on the original post
 ASKER_VERDICT = "asker_verdict"
+VERDICT_REASONING = "verdict_reasoning"
 ASKER_POTENTIALLY_ILLEGAL = "asker_potentially_illegal"
+ASKER_POTENTIALLY_ILLEGAL_REASONING = "asker_potentially_illegal_reasoning"
 
 # rewritten versions of the original post (question) and the model's answer to
 # each one (answer columns are added when the answers are generated)
 THIRD_PARTY_QUESTION = "3rd_party_perspective"
 OPPOSING_QUESTION = "opposing_perspective"
+ORIG_REWRITTEN_QUESTION = "original_rewritten"
 ORIG_NO_EMOTIONS_QUESTION = "original_without_emotions"
 ORIG_NO_EXPLICIT_STANCE_QUESTION = "original_without_explicit_stance"
 ORIG_NO_STANCE_QUESTION = "original_without_stance"
