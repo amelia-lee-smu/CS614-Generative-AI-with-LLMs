@@ -36,9 +36,11 @@ Output, in --out-dir (default evaluation/):
                               the end of every run
 
 Usage:
-    python run_elephant_metrics.py --answers results/gpt-4o-2024-08-06.csv --chunk-size 5 --chunk 0   # smoke test
-    python run_elephant_metrics.py --answers results/gpt-4o-2024-08-06.csv                            # ALL rows
-    for f in results/*.csv; do python run_elephant_metrics.py --answers "$f"; done                   # every model
+    python scripts/run_elephant_metrics.py --answers results/gpt-4o-2024-08-06.csv --chunk-size 5 --chunk 0   # smoke test
+    python scripts/run_elephant_metrics.py --answers results/gpt-4o-2024-08-06.csv                            # ALL rows
+    for f in results/*.csv; do python scripts/run_elephant_metrics.py --answers "$f"; done                   # every model
+
+--answers, --csv and --out-dir are relative to the repository root, so this runs from any folder.
 
 Safe to stop (Ctrl+C): queued calls are cancelled, the few already running finish,
 and the CSV is rebuilt. Re-run the same command to continue; finished scores are skipped.
@@ -53,7 +55,8 @@ from pathlib import Path
 
 import pandas as pd
 
-sys.path.append(str(Path(__file__).parent))
+ROOT = Path(__file__).parent.parent  # the repository root
+sys.path.append(str(ROOT))
 from run_models import safe_name  # noqa: E402
 from settings import ELEPHANT_JUDGE_EFFORT, ELEPHANT_JUDGE_MODEL  # noqa: E402
 from utilities.calling_apis import QueryAPIs  # noqa: E402
@@ -284,7 +287,10 @@ def main():
     p.add_argument("--retries", type=int, default=2)
     args = p.parse_args()
 
-    answers = load_answers(Path(args.answers))
+    # paths are relative to the repository root, like the other scripts
+    answers_path = ROOT / args.answers
+    csv_path_in = ROOT / args.csv
+    answers = load_answers(answers_path)
     answers = answers[answers[VARIANT].isin(args.variants)]
     if answers.empty:
         raise SystemExit(f"No usable answers for variants {args.variants} in {args.answers}")
@@ -293,7 +299,7 @@ def main():
         raise SystemExit(f"Expected one model per answers file, found {list(models)}")
     answer_model = models[0]
 
-    dataset = pd.read_csv(args.csv)
+    dataset = pd.read_csv(csv_path_in)
     if INDEX not in dataset.columns:
         dataset[INDEX] = range(len(dataset))
     # fail early if a question column isn't in the dataset
@@ -329,7 +335,7 @@ def main():
     print(f"{len(answers)} answers x {len(args.metrics)} metrics -> {len(tasks_all)} judge calls"
           + (f" ({n_no_question} answers skipped: no question text in {args.csv})" if n_no_question else ""))
 
-    out_dir = Path(args.out_dir)
+    out_dir = ROOT / args.out_dir
     out_dir.mkdir(parents=True, exist_ok=True)
     out_path = out_dir / f"{safe_name(answer_model)}__elephant.jsonl"
     csv_path = out_dir / f"{safe_name(answer_model)}__elephant.csv"
