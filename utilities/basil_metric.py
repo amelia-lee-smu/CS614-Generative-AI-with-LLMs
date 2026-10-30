@@ -26,8 +26,11 @@ Changes from the paper's Morality judgements prompts (Appendix D.2.1):
 """
 
 import random
+import numpy as np
 import re
+from settings import BASIL_SEED
 from values import *
+from settings import *
 
 # ---------------------------------------------------------------------------
 # Shared parts: Intro, then Instructions, then one Question (Appendix D)
@@ -105,6 +108,6 @@ def pick_agent(post_index, situation, seed=BASIL_SEED):
     return random.Random(f"{seed}-{post_index}").choice(allowed or BASIL_AGENT_NAMES)
 
 
-def clip_probability(value):
-    """Clip a probability to [0, 1], since BASIL_SCHEMA can't enforce the range."""
-    return min(max(float(value), 0.0), 1.0)
+def log_odds(p, eps=CLIPPING_EPS):
+    p = np.clip(p, eps, 1 - eps)
+    return np.log(p / (1 - p))

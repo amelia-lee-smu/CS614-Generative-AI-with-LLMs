@@ -61,6 +61,7 @@ import requests
 ROOT = Path(__file__).parent.parent  # the repository root
 sys.path.append(str(ROOT))
 from run_models import safe_name  # noqa: E402
+from settings import BASIL_TEMPERATURE  # noqa: E402
 from utilities.basil_metric import (  # noqa: E402
     BASIL_ABSTRACT_BELIEF,
     BASIL_SCHEMA,
@@ -72,7 +73,13 @@ from utilities.basil_metric import (  # noqa: E402
 )
 from utilities.calling_apis import QueryAPIs  # noqa: E402
 from utilities.utilities import load_credentials  # noqa: E402
-from values import BASIL_TEMPERATURE, INDEX, ORIG_NO_BOTH_QUESTION  # noqa: E402
+from values import (  # noqa: E402
+    BASIL_ABSTRACT,
+    BASIL_THIRD_PARTY,
+    BASIL_USER,
+    INDEX,
+    ORIG_NO_BOTH_QUESTION,
+)
 
 try:
     from tqdm import tqdm
@@ -82,9 +89,9 @@ except ImportError:  # progress bar is optional
 
 # the 3 BASIL conditions; one result column per condition
 CONDITIONS = {
-    "abstract": BASIL_ABSTRACT_BELIEF,
-    "third_party": BASIL_THIRD_PARTY_BELIEF,
-    "user": BASIL_USER_BELIEF,
+    BASIL_ABSTRACT: BASIL_ABSTRACT_BELIEF,
+    BASIL_THIRD_PARTY: BASIL_THIRD_PARTY_BELIEF,
+    BASIL_USER: BASIL_USER_BELIEF,
 }
 
 # the column holding the situation text that goes into every prompt
