@@ -63,16 +63,25 @@ steps:
 The judge never sees the rewrites, so steps 1 and 2 can run in parallel. Run step 3 after both have finished.
 
 
-## Closed-source models
+## Generation of answers on the various prompt variants
 
-Each model below answered the same 11,902 queries (2,000 posts × 6 variants, minus the 98 variants that were empty in the dataset). Results are in `results/`, one `.jsonl` and one `.csv` per model.
+Each model is shown the 7 various prompt variants individually, and is asked to answer whether the asker is in the wrong (0 or 1), and to provide a short explanation why.
 
-| Family | Model | Release year |
-|---|---|---|
-| OpenAI (GPT-4o) | `gpt-4o-2024-08-06` | 2024 |
-| OpenAI (GPT-4.1) | `gpt-4-1-2025-04-14` | 2025 |
-| OpenAI (GPT-5) | `gpt-5-2025-08-07` | 2025 |
-| OpenAI (GPT-5.4) | `gpt-5-4-2026-03-05` | 2026 |
-| Anthropic (Claude Sonnet 4.5) | `claude-sonnet-4-5-20250929-v1` | 2025 |
-| Anthropic (Claude Sonnet 4.6) | `claude-sonnet-4-6` | 2026 |
-| Anthropic (Claude Sonnet 5) | `claude-sonnet-5` | 2026 |
+| Type | Family | Model | Release year | Run with |
+|---|---|---|---|---|
+| Closed | OpenAI (GPT-4o) | `gpt-4o-2024-08-06` | 2024 | [run_models_closed.py](run_models_closed.py) (Azure) |
+| Closed | OpenAI (GPT-5.4) | `gpt-5-4-2026-03-05` | 2026 | [run_models_closed.py](run_models_closed.py) (Azure) |
+| Closed | Google (Gemini 2.5 Flash) | `gemini-2-5-flash` | 2025 | [run_models_closed.py](run_models_closed.py) (GPTeal) |
+| Closed | Google (Gemini 3.5 Flash) | `gemini-3-5-flash` | 2026 | [run_models_closed.py](run_models_closed.py) (GPTeal) |
+| Open | Meta (Llama 2 7B) | `llama2:7b` | 2023 | [run_models.py](run_models.py) (Ollama) |
+| Open | Meta (Llama 3.1 8B) | `llama3.1:8b` | 2024 | [run_models.py](run_models.py) (Ollama) |
+| Open | Google (Gemma 7B) | `gemma:7b` | 2024 | [run_models.py](run_models.py) (Ollama) |
+| Open | Google (Gemma 4 E4B) | `gemma4:e4b` | 2026 | [run_models.py](run_models.py) (Ollama) |
+| Open | Alibaba (Qwen 1.5 7B) | `qwen:7b` | 2024 | [run_models.py](run_models.py) (Ollama) |
+| Open | Alibaba (Qwen 3.5 9B) | `qwen3.5:9b` | 2026 | [run_models.py](run_models.py) (Ollama) |
+
+The 7 variants are: the original post, `3rd_party_perspective`,
+`opposing_perspective`, `original_without_emotions`, `original_without_explicit_stance`, `original_without_stance` and
+`original_without_both`. 
+
+The result files for each model is stored in [raw_results/](https://github.com/amelia-lee-smu/CS614-Generative-AI-with-LLMs/tree/main/raw_results)
