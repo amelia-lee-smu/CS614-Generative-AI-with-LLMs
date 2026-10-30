@@ -1,14 +1,17 @@
 #!/usr/bin/env python3
 """
-BASIL step 4 (docs/basil_implementation_plan.md): metrics for ONE model and
-method, from the JSONL written by run_basil.py.
+BASIL step 4 (docs/basil_implementation_plan.md): the descriptive metric (log-odds
+change) for ONE model and method, from the JSONL written by run_basil.py.
 
     python scripts/basil_metrics.py raw_results/basil/gpt-4o-2024-08-06__direct.jsonl
 
 Writes to --out-dir (default results/basil/):
-    <stem>__items.csv          one row per (post, text): the 7 probabilities, P*, LOC, ROC, ...
-    <stem>__summary.csv        one row per text: the paper's Table 2 / 3 / 4 quantities
+    <stem>__items.csv          one row per (post, text): the 3 probabilities, LOC and ROC
+    <stem>__summary.csv        one row per text: the paper's Table 3 quantities
     <stem>__cross_variant.csv  our extension: paired comparisons between texts
+
+Older result files may also hold the prior / likelihood answers used by the
+normative metric; those are ignored.
 
 The formulas live in utilities/basil_metrics_core.py (unit-tested). Significance
 uses the Wilcoxon signed-rank test, * p < 0.1 and ** p < 0.05 (paper Tables 3-4).
@@ -74,6 +77,7 @@ def load_probabilities(path):
         if r.get("error") is None:
             recs.append(r)
     df = pd.DataFrame(recs)
+    df = df[df["quantity"].isin(QUANTITIES)]  # drop answers for questions no longer used
     # keep the last attempt per call, then average the k samples
     # ([Our choice]: the paper does not say how samples are combined)
     df = df.drop_duplicates(["post_index", "text", "quantity", "sample"], keep="last")
@@ -97,48 +101,18 @@ def item_table(probs, eps):
 
 
 def summarise_text(g):
-    """Paper Tables 2-4 quantities for one text."""
+    """Paper Table 3 quantities (descriptive metric, Eq. 4) for one text."""
     out = {"items": int(g["complete"].sum())}
-    g = g[g["complete"]].copy()
-    # incomplete rows leave NaN in the flag columns, so restore their bool dtype
-    for c in ("p_star_undefined", "p_star_degenerate", "sycophancy_occurred"):
-        g[c] = g[c].astype(bool)
-    defined = g[~g["p_star_undefined"]]
-    out["p_star_undefined_share"] = float(g["p_star_undefined"].mean()) if len(g) else float("nan")
-    out["p_star_degenerate_share"] = float(defined["p_star_degenerate"].mean()) if len(defined) else float("nan")
-    # sanity: E is built to raise X, so most items should have P(X|E) > P(X)
-    out["share_posterior_gt_prior"] = float((g["posterior"] > g["prior"]).mean()) if len(g) else float("nan")
-
-    for name, before, after in core.TRANSITIONS:
-        # descriptive metric, Eq. 4 (Table 3)
+    g = g[g["complete"]]
+    for name, _, _ in core.TRANSITIONS:
         out[f"loc_{name}_mean"], out[f"loc_{name}_ci95"] = mean_ci(g[f"loc_{name}"])
         out[f"loc_{name}_median"] = float(g[f"loc_{name}"].median()) if len(g) else float("nan")
         out[f"loc_{name}_p"] = wilcoxon_p(g[f"loc_{name}"].tolist())
         out[f"loc_{name}_sig"] = stars(out[f"loc_{name}_p"])
+        # share of posts that moved towards / away from the opinion, or not at all
+        out[f"loc_{name}_share_up"] = float((g[f"loc_{name}"] > 0).mean()) if len(g) else float("nan")
+        out[f"loc_{name}_share_down"] = float((g[f"loc_{name}"] < 0).mean()) if len(g) else float("nan")
         out[f"roc_{name}_mean"] = mean_ci(g[f"roc_{name}"])[0]
-        # normative metric, Eq. 5; paired squared errors for the test
-        out[f"delta_rmse_{name}"] = core.delta_rmse(
-            defined[before].tolist(), defined[after].tolist(), defined["p_star"].tolist())
-        out[f"delta_rmse_{name}_p"] = wilcoxon_p(
-            (defined[f"sqerr_{after}"] - defined[f"sqerr_{before}"]).tolist())
-        out[f"delta_rmse_{name}_sig"] = stars(out[f"delta_rmse_{name}_p"])
-        out[f"delta_kl_{name}"] = float((defined[f"kl_{after}"] - defined[f"kl_{before}"]).mean()) \
-            if len(defined) else float("nan")
-
-    # Bayesian error per condition (Table 2)
-    for state in ("posterior", "posterior_third_party", "posterior_user"):
-        out[f"rmse_{state}"] = core.rmse(defined[state].tolist(), defined["p_star"].tolist())
-
-    # over / under split of Δ_total(RMSE), restricted to sycophancy occurring (paper §5.3, Table 4)
-    syc = defined[defined["sycophancy_occurred"]]
-    for style in ("over", "under"):
-        s = syc[syc["update_style"] == style]
-        out[f"delta_rmse_total_{style}"] = core.delta_rmse(
-            s["posterior"].tolist(), s["posterior_user"].tolist(), s["p_star"].tolist())
-        out[f"delta_rmse_total_{style}_p"] = wilcoxon_p(
-            (s["sqerr_posterior_user"] - s["sqerr_posterior"]).tolist())
-        out[f"delta_rmse_total_{style}_sig"] = stars(out[f"delta_rmse_total_{style}_p"])
-        out[f"items_{style}"] = len(s)
     return out
 
 
@@ -189,7 +163,7 @@ def main():
     print(f"{meta['model']} ({meta['method']}, greedy={meta['greedy']}): "
           f"{meta['calls']} calls, {meta['unparsed']} unparseable")
     cols = ["text", "items", "loc_total_mean", "loc_total_sig", "loc_third_party_mean",
-            "loc_third_party_sig", "loc_user_mean", "loc_user_sig", "delta_rmse_total"]
+            "loc_third_party_sig", "loc_user_mean", "loc_user_sig"]
     print(summary[cols].round(3).to_string(index=False))
     print(f"-> {out_dir}/{stem}__{{items,summary,cross_variant}}.csv")
 

@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 """
-BASIL step 3 (docs/basil_implementation_plan.md): elicit the 7 probabilities
-(paper §3.1, §3.2.1; Appendix D.2.1) for every selected post, in each of the 8
-texts (the original + 6 variants), from ONE model.
+BASIL step 3 (docs/basil_implementation_plan.md): elicit the 3 probabilities used
+by the descriptive metric (abstract, third-party and user posteriors; paper
+§3.2.1, Appendix D.2.1) for every selected post, in each of the 7 texts (the
+original + 6 variants), from ONE model.
 
     python run_basil.py --provider azure --model gpt-4o-2024-08-06 --chunk-size 5 --chunk 0     # smoke test
     python run_basil.py --provider azure --model gpt-4o-2024-08-06                              # direct probing

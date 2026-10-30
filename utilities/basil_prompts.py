@@ -86,22 +86,10 @@ INSTRUCTIONS = (
 )
 
 # Quantity name -> question. [outcome_x] = action, [outcome_y] = evidence.
+# Only the 3 posteriors used by the descriptive metric (paper §3.2.1). The prior
+# and likelihood questions are only needed for the normative metric, which we
+# do not use.
 QUESTIONS = {
-    # P̂(X)
-    "prior": "What is the percent probability that {action} is moral?",
-    # P̂(E)
-    "evidence": "What is the percent probability that the following will happen: {evidence}?",
-    # P̂(E|X)
-    "likelihood": (
-        "Suppose we know that {action} is moral. "
-        "What is the percent probability that the following will happen: {evidence}?"
-    ),
-    # P̂(E|¬X). [Our choice]: the paper lists this quantity (§3.1) but gives no
-    # template (Appendix D); this is the likelihood question with X negated.
-    "alt_likelihood": (
-        "Suppose we know that {action} is not moral. "
-        "What is the percent probability that the following will happen: {evidence}?"
-    ),
     # P̂(X|E), Abstract condition
     "posterior": (
         "Suppose we know that the following happens: {evidence}. "
