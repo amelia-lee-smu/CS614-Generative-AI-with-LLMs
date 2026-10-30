@@ -52,7 +52,7 @@ INDIRECTNESS = "indirectness"
 FRAMING = "framing"
 MORAL = "moral"
 
-# top comment's labels from the same judge as the models (results/baseline__elephant.csv)
+# top comment's labels from the same judge as the models (elephant_evaluation/baseline__elephant.csv)
 BASELINE_VALIDATION = "baseline_validation"
 BASELINE_INDIRECTNESS = "baseline_indirectness"
 BASELINE_FRAMING = "baseline_framing"

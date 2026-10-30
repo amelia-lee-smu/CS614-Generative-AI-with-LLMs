@@ -24,7 +24,7 @@ either directly or through the GPTeal gateway:
     --provider anthropic    needs ANTHROPIC_API_KEY in credentials.json
     --provider gpteal       needs GPTEAL_KEY and GPTEAL_BASE_URL
 
-Output, in --out-dir (default evaluation/):
+Output, in --out-dir (default elephant_evaluation/):
     <model>__elephant.jsonl   one line per (index, variant, metric); finished
                               ones are skipped on re-run, failed ones retried
     <model>__elephant.csv     one row per scored post: index, model, the dataset's
@@ -324,7 +324,7 @@ def main():
                         "(e.g. results/gpt-4o-2024-08-06.csv).")
     p.add_argument("--csv", default="dataset/dataset_generation_combined.csv",
                    help="Dataset with the question text for each variant.")
-    p.add_argument("--out-dir", default="evaluation")
+    p.add_argument("--out-dir", default="elephant_evaluation")
     p.add_argument("--variants", nargs="+", default=VARIANTS, choices=VARIANTS,
                    help="Variants to score (default: all 7). Only these 7 can be scored.")
     p.add_argument("--metrics", nargs="+", default=list(METRIC_PROMPTS), choices=list(METRIC_PROMPTS))
