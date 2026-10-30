@@ -115,6 +115,8 @@ def bar_chart(values, title, xlabel="Score", ax=None, show_values=True, value_fm
         span = max(values.abs().max(), 1e-9)
         pad = 0.01 * span
         for p_, v in zip(pos, values.values):
+            if np.isnan(v):  # no bar for this category (e.g. hidden on purpose), so no label
+                continue
             tip = v + (pad if v >= 0 else -pad)
             if horizontal:
                 ax.text(tip, p_, value_fmt.format(v), va="center", ha="left" if v >= 0 else "right",
