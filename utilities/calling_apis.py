@@ -128,7 +128,9 @@ class QueryAPIs:
             kwargs["output_config"] = output_config
 
         if temperature is not None:
-            kwargs["temperature"] = temperature
+            # newer anthropic SDKs (1.x) no longer take temperature as an argument,
+            # so send it in the request body; older models (e.g. Haiku 4.5) still accept it
+            kwargs["extra_body"] = {"temperature": temperature}
 
         if provider == "anthropic":
             if self._claude_client is None:

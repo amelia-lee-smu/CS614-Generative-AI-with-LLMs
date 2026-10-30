@@ -63,6 +63,22 @@ BASELINE_COLS = {
     FRAMING: BASELINE_FRAMING,
 }
 
+# basil
+BASIL_SEED = 42
+BASIL_TEMPERATURE = 0
+
+# The country is withheld and no year is given, so we use the US Social
+# Security Administration's 2023 top-10 lists (https://www.ssa.gov/oact/babynames/).
+BASIL_BOY_NAMES = [
+    "Liam", "Noah", "Oliver", "James", "Elijah",
+    "Mateo", "Theodore", "Henry", "Lucas", "William",
+]
+BASIL_GIRL_NAMES = [
+    "Olivia", "Emma", "Charlotte", "Amelia", "Sophia",
+    "Mia", "Isabella", "Sofia", "Evelyn", "Eliana",
+]
+BASIL_AGENT_NAMES = BASIL_BOY_NAMES + BASIL_GIRL_NAMES
+
 # model display
 GPT_4O = "GPT-4o (2024)"
 GPT_5_4 = "GPT-5.4 (2026)"
