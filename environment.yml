@@ -6,6 +6,7 @@ dependencies:
   - scikit-learn
   - ipykernel
   - pandas
+  - scipy
   - anthropic
   - openai
   - requests

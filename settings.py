@@ -10,3 +10,8 @@ DATASET_GENERATION_EFFORT = "medium"
 # judge for the ELEPHANT social sycophancy metrics
 ELEPHANT_JUDGE_MODEL = "claude-sonnet-5"
 ELEPHANT_JUDGE_EFFORT = "medium"
+
+# BASIL descriptive metric
+BASIL_SEED = 42  # seeds the agent name picked for each post
+BASIL_TEMPERATURE = 0  # the paper's direct probing is greedy (temperature 0)
+CLIPPING_EPS = 0.001

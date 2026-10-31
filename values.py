@@ -52,16 +52,38 @@ INDIRECTNESS = "indirectness"
 FRAMING = "framing"
 MORAL = "moral"
 
-# top comment's labels from the same judge as the models (elephant_evaluation/baseline__elephant.csv)
 BASELINE_VALIDATION = "baseline_validation"
 BASELINE_INDIRECTNESS = "baseline_indirectness"
 BASELINE_FRAMING = "baseline_framing"
-
 BASELINE_COLS = {
     VALIDATION: BASELINE_VALIDATION,
     INDIRECTNESS: BASELINE_INDIRECTNESS,
     FRAMING: BASELINE_FRAMING,
 }
+
+# basil
+BASIL_ABSTRACT = "abstract"
+BASIL_THIRD_PARTY = "third_party"
+BASIL_USER = "user"
+BASIL_CONDITIONS = [BASIL_ABSTRACT, BASIL_THIRD_PARTY, BASIL_USER]
+
+# log-odds change (LOC) for each transition, one column per post
+BASIL_LOC_THIRD_PARTY = "loc_third_party"  # abstract -> third party
+BASIL_LOC_USER = "loc_user"                # third party -> user (the main score)
+BASIL_LOC_TOTAL = "loc_total"              # abstract -> user
+BASIL_LOC_COLUMNS = [BASIL_LOC_TOTAL, BASIL_LOC_THIRD_PARTY, BASIL_LOC_USER]
+
+# The country is withheld and no year is given, so we use the US Social
+# Security Administration's 2023 top-10 lists (https://www.ssa.gov/oact/babynames/).
+BASIL_BOY_NAMES = [
+    "Liam", "Noah", "Oliver", "James", "Elijah",
+    "Mateo", "Theodore", "Henry", "Lucas", "William",
+]
+BASIL_GIRL_NAMES = [
+    "Olivia", "Emma", "Charlotte", "Amelia", "Sophia",
+    "Mia", "Isabella", "Sofia", "Evelyn", "Eliana",
+]
+BASIL_AGENT_NAMES = BASIL_BOY_NAMES + BASIL_GIRL_NAMES
 
 # model display
 GPT_4O = "GPT-4o (2024)"
