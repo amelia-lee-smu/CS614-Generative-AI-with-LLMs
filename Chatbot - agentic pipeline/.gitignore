@@ -1,0 +1,8 @@
+__pycache__/
+*.pyc
+config.yaml
+.env
+*.jsonl
+eval_out/
+closed_eval*/
+.DS_Store
