@@ -26,8 +26,38 @@ def _percent_lim(values_min):
     return (lo, 100)
 
 
-def bar_chart(values, title, xlabel="Score", ax=None, show_values=True, value_fmt=None, percent=False, colors=None,
-              horizontal=False, value_lim=None, average_line=False):
+def model_family(name):
+    """The family name from a model's display name: its leading letters, e.g. 'GPT-4o (2024)' -> 'GPT'."""
+    return re.match(r"[A-Za-z]+", str(name)).group()
+
+
+def add_family_labels(ax, names, horizontal=False):
+    """Divide the categories into model families: a thin line between families and the
+    family name at the top of each section (at the right edge when horizontal).
+
+    names: the category labels in the order they are drawn (one per bar or group).
+    Families must be next to each other, as in MODEL_ORDER.
+    """
+    families = [model_family(n) for n in names]
+    start = 0
+    for i in range(1, len(families) + 1):
+        if i < len(families) and families[i] == families[start]:
+            continue
+        middle = (start + i - 1) / 2
+        if horizontal:
+            ax.text(1.0, middle, families[start], transform=ax.get_yaxis_transform(),
+                    ha="right", va="center", color=TEXT_COLOR, fontsize=11)
+        else:
+            ax.text(middle, 0.97, families[start], transform=ax.get_xaxis_transform(),
+                    ha="center", va="top", color=TEXT_COLOR, fontsize=11)
+        if i < len(families):  # line between this family and the next
+            line = ax.axhline if horizontal else ax.axvline
+            line(i - 0.5, color=GREY, linewidth=1, zorder=1)
+        start = i
+
+
+def bar_chart(values, title, xlabel="Score", ax=None, show_values=True, value_fmt="{:.1f}%", percent=True, colors=None,
+              horizontal=False, value_lim=None, average_line=True, show_families=True):
     """Bar chart of one value per category.
 
     values: pd.Series, index = category labels (in index order), values = bar lengths.
@@ -40,6 +70,7 @@ def bar_chart(values, title, xlabel="Score", ax=None, show_values=True, value_fm
     value_lim: optional (min, max) for the value axis, in the units shown.
                With percent=True it defaults to 0-100% (extended below 0 if any value is negative).
     average_line: if True, draw a line across the chart at the mean of the bars, labelled with its value.
+    show_families: if True, separate the model families with thin lines and label each one (see add_family_labels).
     Returns the matplotlib Axes so you can tweak it further.
     """
     if percent:
@@ -84,6 +115,8 @@ def bar_chart(values, title, xlabel="Score", ax=None, show_values=True, value_fm
         span = max(values.abs().max(), 1e-9)
         pad = 0.01 * span
         for p_, v in zip(pos, values.values):
+            if np.isnan(v):  # no bar for this category (e.g. hidden on purpose), so no label
+                continue
             tip = v + (pad if v >= 0 else -pad)
             if horizontal:
                 ax.text(tip, p_, value_fmt.format(v), va="center", ha="left" if v >= 0 else "right",
@@ -114,11 +147,16 @@ def bar_chart(values, title, xlabel="Score", ax=None, show_values=True, value_fm
     if percent:
         value_axis.set_major_formatter(PercentFormatter(decimals=0))
 
+    if show_families:
+        add_family_labels(ax, values.index, horizontal)
+
     ax.set_title(title, loc="center", color=TEXT_COLOR, fontsize=12, pad=10)
     return ax
 
+
 def bar_chart_with_reference(values, reference, title, xlabel, colors=None,
-                             value_label="Value", reference_label="Reference", percent=True, value_lim=None):
+                             value_label="Value", reference_label="Reference", percent=True, value_lim=None,
+                             show_value_legend=False, show_families=True):
     """Standing bar chart of `values`, with a black marker on each bar at that category's `reference` value.
 
     The gap (values - reference) is printed above each bar together with the value, e.g. "87.1% (+33.8%)".
@@ -126,6 +164,8 @@ def bar_chart_with_reference(values, reference, title, xlabel, colors=None,
     values, reference: pd.Series with the same index (e.g. model names), as fractions (0.87) when percent=True.
     colors: optional dict {category label: colour}, like bar_chart; labels not in it use BAR_COLOR.
     value_label, reference_label: legend names for the bars and the markers.
+    show_value_legend: also list the bars in the legend (default False: only the markers are listed).
+    show_families: if True, separate and label the model families, as in bar_chart.
     value_lim: optional (min, max) for the value axis, in the units shown. With percent=True it defaults to
                0-100%, extended below 0 if any bar or marker is negative.
     Returns the matplotlib Axes.
@@ -145,7 +185,16 @@ def bar_chart_with_reference(values, reference, title, xlabel, colors=None,
         colors=colors,
         value_lim=value_lim if value_lim is not None or not percent
                   else _percent_lim(min(values.min(), reference.min()) * 100),  # keep markers in view
+        average_line=False,  # the markers are the comparison here
+        show_families=show_families,
     )
+
+    # bars can reach 100%: leave room above them for the value labels and family names,
+    # but keep the ticks at 100% and below
+    if percent and value_lim is None:
+        lo, hi = ax.get_ylim()
+        ax.set_ylim(lo, hi + (25 if show_families else 12))
+        ax.set_yticks([t for t in ax.get_yticks() if lo <= t <= hi])
 
     for i, label in enumerate(values.index):
         # marker at the reference value for this category
@@ -156,19 +205,22 @@ def bar_chart_with_reference(values, reference, title, xlabel, colors=None,
                 fmt.format(values[label]) + "\n" + gap_fmt.format(gap[label] * scale),
                 ha="center", va="bottom", fontsize=8, color=MUTED_TEXT)
 
-    # legend for the two marks
+    # legend for the reference markers (and the bars, if asked for)
+    handles = [Line2D([], [], color=TEXT_COLOR, linewidth=2.5, label=reference_label)]
+    if show_value_legend:
+        handles.insert(0, Patch(color=BAR_COLOR, label=value_label))
     ax.legend(
-        handles=[Patch(color=BAR_COLOR, label=value_label),
-                 Line2D([], [], color=TEXT_COLOR, linewidth=2.5, label=reference_label)],
-        loc="lower center", bbox_to_anchor=(0.5, 1.0), ncol=2, frameon=False, fontsize=9,
+        handles=handles,
+        # 1.04 leaves a gap between the top of the plot and the legend
+        loc="lower center", bbox_to_anchor=(0.5, 1.04), ncol=len(handles), frameon=False, fontsize=9,
     )
-    ax.set_title(title, loc="center", color=TEXT_COLOR, fontsize=12, pad=28)
+    ax.set_title(title, loc="center", color=TEXT_COLOR, fontsize=12, pad=40)  # above the legend
     return ax
 
 
 def grouped_bar_chart(data, title, xlabel="Score", ax=None, colors=None, labels=None,
                       percent=False, show_values=False, value_fmt=None, horizontal=False, value_lim=None,
-                      reference=None, reference_label="Reference"):
+                      reference=None, reference_label="Reference", show_families=True):
     """Grouped bar chart: one group per row of `data`, one bar per column.
 
     data: pd.DataFrame, index = categories (groups), columns = series (bars within a group).
@@ -183,6 +235,7 @@ def grouped_bar_chart(data, title, xlabel="Score", ax=None, colors=None, labels=
     reference: optional pd.DataFrame with the same index and columns as `data`; draws a short black
                marker on each bar at its reference value (e.g. the same metric on all posts).
     reference_label: legend name for the reference markers.
+    show_families: if True, separate and label the model families, as in bar_chart.
     Returns the matplotlib Axes.
     """
     if percent:
@@ -264,6 +317,9 @@ def grouped_bar_chart(data, title, xlabel="Score", ax=None, colors=None, labels=
     if percent:
         value_axis.set_major_formatter(PercentFormatter(decimals=0))
 
+    if show_families:
+        add_family_labels(ax, data.index, horizontal)
+
     handles, _ = ax.get_legend_handles_labels()
     if reference is not None:
         handles.append(Line2D([], [], color=TEXT_COLOR, linewidth=2, label=reference_label))
@@ -272,11 +328,17 @@ def grouped_bar_chart(data, title, xlabel="Score", ax=None, colors=None, labels=
     ax.set_title(title, loc="center", color=TEXT_COLOR, fontsize=12, pad=30)
     return ax
 
-def model_sort_key(name):
-    """Family name (leading letters, case-insensitive), then release year in brackets.
 
-    e.g. 'GPT-4o (2024)' -> ('gpt', 2024), 'Qwen1.5 7B (2024)' -> ('qwen', 2024)
+# proprietary (closed) model families; every other family is open-weight
+CLOSED_FAMILIES = {"gemini", "gpt"}
+
+
+def model_sort_key(name):
+    """
+    Open-weight families first, then closed ones.
+    Families in alphabetical within each, then release year in brackets (older model first).
+    Order: Gemma, Llama, Qwen | Gemini, GPT
     """
     family = re.match(r"[a-z]+", name.lower()).group()
     year = int(name[name.rindex("(") + 1 : name.rindex(")")])
-    return (family, year, name)
+    return (family in CLOSED_FAMILIES, family, year, name)

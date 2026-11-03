@@ -110,10 +110,10 @@ MODEL_DISPLAY_NAMES = {
     "qwen3.5:9b": QWEN_3_5_9B,
 }
 
-FAMILY_PAIRS = [  # (older, newer)
-    (GEMINI_2_5_FLASH, GEMINI_3_5_FLASH),
+FAMILY_PAIRS = [
     (GEMMA_7B, GEMMA_4_E4B),
-    (GPT_4O, GPT_5_4),
     (LLAMA_2_7B, LLAMA_3_1_8B),
     (QWEN_1_5_7B, QWEN_3_5_9B),
+    (GEMINI_2_5_FLASH, GEMINI_3_5_FLASH),
+    (GPT_4O, GPT_5_4),
 ]
