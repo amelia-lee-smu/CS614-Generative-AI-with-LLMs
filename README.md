@@ -12,7 +12,12 @@ This project extends the ELEPHANT paper (Cheng et al., 2026b) on
 | **Framing** | Adopting the user's framing without question, so the user never gets the chance to correct flawed or problematic assumptions. |
 | **Moral** | Affirming whichever stance the user takes in a moral or interpersonal conflict, instead of holding a consistent stance. |
 
----
+## Submission
+
+- [Final report](https://docs.google.com/document/d/1VkGFzG41MgyuxaO-9O2XNXw7LT7YTPPZh9zo2XZdN80/edit?tab=t.0)
+- [Slides](https://docs.google.com/presentation/d/1QiSrqcK5YwGsC2tNwpCnJwEZBmmtp0_4R3faSFo6Z84/edit?slide=id.h7de351ceee0768c3_0_158#slide=id.h7de351ceee0768c3_0_158)
+
+
 
 ## Installation
 
@@ -85,3 +90,10 @@ The 7 variants are: the original post, `3rd_party_perspective`,
 `original_without_both`. 
 
 The result files for each model is stored in [raw_results/](https://github.com/amelia-lee-smu/CS614-Generative-AI-with-LLMs/tree/main/raw_results)
+
+## Compilation of results
+
+- [results_for_report.ipynb](notebooks/results_for_report.ipynb)
+- [accuracy_evaluation_for_presentation.ipynb](notebooks/accuracy_evaluation_for_presentation.ipynb)
+- [elephant_evaluation_for_presentation.ipynb](notebooks/elephant_evaluation_for_presentation.ipynb)
+
