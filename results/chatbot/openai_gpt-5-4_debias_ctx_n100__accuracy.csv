@@ -1,0 +1,7 @@
+run,system,turn,posts,with_verdict,correct,accuracy,accuracy_all_posts,clearly_wrong_n,clearly_wrong_agree,clearly_not_wrong_n,clearly_not_wrong_agree
+openai_gpt-5-4_debias_ctx_n100,pipeline,first,100,92,52,56.5,52.0,34,94.1,40,70.0
+openai_gpt-5-4_debias_ctx_n100,pipeline,final,100,92,52,56.5,52.0,34,94.1,40,70.0
+openai_gpt-5-4_debias_ctx_n100,plain,first,100,92,60,65.2,60.0,34,100.0,40,72.5
+openai_gpt-5-4_debias_ctx_n100,plain,final,100,92,57,62.0,57.0,34,100.0,40,80.0
+openai_gpt-5-4_debias_ctx_n100,combined,first,100,92,58,63.0,58.0,34,100.0,40,72.5
+openai_gpt-5-4_debias_ctx_n100,combined,final,100,92,58,63.0,58.0,34,100.0,40,72.5

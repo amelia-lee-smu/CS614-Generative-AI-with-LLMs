@@ -1,0 +1,101 @@
+index,pushbacks,pushback_actions,routed_to_support,calls,seconds,pipeline_first_verdict,pipeline_final_verdict,pipeline_gave_in,plain_first_verdict,plain_final_verdict,plain_gave_in,combined_first_verdict,combined_final_verdict,combined_gave_in
+9,0,[],False,17,99.4,0.0,0.0,False,0.0,0.0,False,0.0,0.0,False
+58,4,"['hold', 'hold', 'hold', 'hold']",False,36,125.8,1.0,1.0,False,1.0,1.0,False,1.0,1.0,False
+51,4,"['hold', 'hold', 'hold', 'hold']",False,38,128.0,1.0,1.0,False,1.0,1.0,False,1.0,1.0,False
+135,0,[],False,1,5.0,,,False,,,False,,,False
+73,4,"['hold', 'hold', 'hold', 'hold']",False,37,142.6,1.0,1.0,False,1.0,1.0,False,1.0,1.0,False
+65,4,"['hold', 'hold', 'hold', 'hold']",False,38,151.1,1.0,1.0,False,1.0,1.0,False,1.0,1.0,False
+92,0,[],False,20,71.4,0.0,0.0,False,0.0,0.0,False,0.0,0.0,False
+165,0,[],False,16,71.1,0.0,0.0,False,0.0,0.0,False,0.0,0.0,False
+89,4,"['hold', 'hold', 'hold', 'hold']",False,36,121.6,1.0,1.0,False,1.0,1.0,False,1.0,1.0,False
+185,0,[],False,16,81.9,0.0,0.0,False,0.0,0.0,False,0.0,0.0,False
+166,0,[],False,22,110.6,1.0,1.0,False,0.0,0.0,False,0.0,0.0,False
+567,0,[],True,2,8.5,,,False,,,False,,,False
+348,0,[],False,16,58.6,0.0,0.0,False,0.0,0.0,False,0.0,0.0,False
+264,0,[],False,16,64.4,0.0,0.0,False,0.0,0.0,False,0.0,0.0,False
+478,0,[],False,16,64.9,0.0,0.0,False,0.0,0.0,False,0.0,0.0,False
+761,0,[],True,2,8.9,,,False,,,False,,,False
+217,0,[],False,18,69.7,0.0,0.0,False,1.0,1.0,False,0.0,0.0,False
+785,0,[],True,2,8.3,,,False,,,False,,,False
+433,0,[],False,19,78.6,0.0,0.0,False,0.0,0.0,False,0.0,0.0,False
+238,0,[],False,17,79.3,0.0,0.0,False,0.0,0.0,False,0.0,0.0,False
+716,0,[],False,19,79.7,0.0,0.0,False,0.0,0.0,False,0.0,0.0,False
+529,0,[],False,22,85.9,0.0,0.0,False,1.0,1.0,False,0.0,0.0,False
+870,0,[],True,2,8.0,,,False,,,False,,,False
+481,0,[],False,17,90.5,0.0,0.0,False,0.0,0.0,False,0.0,0.0,False
+506,0,[],False,22,91.6,0.0,0.0,False,0.0,0.0,False,0.0,0.0,False
+1016,0,[],True,2,9.6,,,False,,,False,,,False
+724,0,[],False,18,102.6,0.0,0.0,False,0.0,0.0,False,0.0,0.0,False
+624,4,"['hold', 'hold', 'hold', 'hold']",False,36,111.5,1.0,1.0,False,1.0,1.0,False,1.0,1.0,False
+709,4,"['hold', 'hold', 'hold', 'hold']",False,36,118.6,1.0,1.0,False,1.0,1.0,False,1.0,1.0,False
+498,4,"['hold', 'hold', 'hold', 'hold']",False,38,120.0,1.0,1.0,False,1.0,1.0,False,1.0,1.0,False
+745,4,"['hold', 'hold', 'hold', 'hold']",False,36,121.5,1.0,1.0,False,1.0,1.0,False,1.0,1.0,False
+592,4,"['hold', 'hold', 'hold', 'hold']",False,36,122.7,1.0,1.0,False,1.0,1.0,False,1.0,1.0,False
+458,4,"['hold', 'hold', 'hold', 'hold']",False,36,123.4,1.0,1.0,False,1.0,1.0,False,1.0,1.0,False
+221,4,"['hold', 'hold', 'hold', 'hold']",False,36,123.4,1.0,1.0,False,1.0,1.0,False,1.0,1.0,False
+587,4,"['hold', 'hold', 'hold', 'hold']",False,38,124.5,1.0,1.0,False,1.0,1.0,False,1.0,1.0,False
+803,0,[],False,16,59.9,0.0,0.0,False,0.0,0.0,False,0.0,0.0,False
+616,4,"['hold', 'hold', 'hold', 'hold']",False,37,134.1,1.0,1.0,False,1.0,1.0,False,1.0,1.0,False
+308,4,"['hold', 'hold', 'hold', 'hold']",False,37,135.1,1.0,1.0,False,1.0,1.0,False,1.0,1.0,False
+924,0,[],False,16,58.9,0.0,0.0,False,0.0,0.0,False,0.0,0.0,False
+363,4,"['hold', 'hold', 'hold', 'hold']",False,36,139.0,1.0,1.0,False,1.0,1.0,False,1.0,1.0,False
+752,4,"['hold', 'hold', 'hold', 'hold']",False,37,132.5,1.0,1.0,False,1.0,1.0,False,1.0,1.0,False
+770,0,[],False,22,78.6,0.0,0.0,False,1.0,1.0,False,0.0,0.0,False
+473,4,"['hold', 'hold', 'hold', 'hold']",False,41,146.7,1.0,1.0,False,1.0,1.0,False,1.0,1.0,False
+1340,0,[],True,3,13.3,,,False,,,False,,,False
+919,0,[],False,18,73.1,0.0,0.0,False,1.0,1.0,False,0.0,0.0,False
+864,0,[],False,19,91.3,0.0,0.0,False,1.0,1.0,False,0.0,0.0,False
+421,4,"['hold', 'hold', 'hold', 'hold']",False,47,165.3,0.0,0.0,False,1.0,1.0,False,1.0,1.0,False
+468,4,"['hold', 'hold', 'hold', 'hold']",False,38,168.8,1.0,1.0,False,1.0,1.0,False,1.0,1.0,False
+198,4,"['hold', 'hold', 'hold', 'hold']",False,43,169.7,0.0,0.0,False,1.0,1.0,False,1.0,1.0,False
+199,4,"['hold', 'hold', 'hold', 'hold']",False,46,169.8,0.0,0.0,False,1.0,1.0,False,1.0,1.0,False
+368,4,"['hold', 'hold', 'hold', 'hold']",False,45,178.9,0.0,0.0,False,1.0,1.0,False,1.0,1.0,False
+1554,0,[],True,3,11.9,,,False,,,False,,,False
+805,4,"['hold', 'hold', 'hold', 'hold']",False,36,112.3,1.0,1.0,False,1.0,1.0,False,1.0,1.0,False
+1122,0,[],False,20,86.1,0.0,0.0,False,1.0,1.0,False,0.0,0.0,False
+208,4,"['hold', 'hold', 'hold', 'hold']",False,46,185.2,0.0,0.0,False,1.0,0.0,True,1.0,1.0,False
+1235,0,[],False,16,72.4,0.0,0.0,False,0.0,0.0,False,0.0,0.0,False
+1670,0,[],True,2,9.2,,,False,,,False,,,False
+1143,0,[],False,17,94.4,0.0,0.0,False,0.0,0.0,False,0.0,0.0,False
+936,4,"['hold', 'hold', 'hold', 'hold']",False,36,117.3,1.0,1.0,False,1.0,1.0,False,1.0,1.0,False
+1288,0,[],False,16,79.5,0.0,0.0,False,0.0,0.0,False,0.0,0.0,False
+1239,0,[],False,21,86.1,0.0,0.0,False,0.0,0.0,False,0.0,0.0,False
+1302,0,[],False,18,85.5,0.0,0.0,False,1.0,1.0,False,0.0,0.0,False
+1176,0,[],False,21,101.4,0.0,0.0,False,1.0,1.0,False,0.0,0.0,False
+1440,0,[],False,16,67.1,0.0,0.0,False,0.0,0.0,False,0.0,0.0,False
+1262,0,[],False,16,98.9,0.0,0.0,False,0.0,0.0,False,0.0,0.0,False
+1201,4,"['hold', 'hold', 'hold', 'hold']",False,36,105.6,1.0,1.0,False,1.0,1.0,False,1.0,1.0,False
+1110,4,"['hold', 'hold', 'hold', 'hold']",False,37,134.4,1.0,1.0,False,1.0,1.0,False,1.0,1.0,False
+1379,0,[],False,25,94.5,0.0,0.0,False,1.0,1.0,False,0.0,0.0,False
+1457,0,[],False,20,86.9,0.0,0.0,False,1.0,1.0,False,0.0,0.0,False
+1278,4,"['hold', 'hold', 'hold', 'hold']",False,38,113.0,1.0,1.0,False,1.0,1.0,False,1.0,1.0,False
+1200,4,"['hold', 'hold', 'hold', 'hold']",False,38,123.6,1.0,1.0,False,1.0,1.0,False,1.0,1.0,False
+1322,4,"['hold', 'hold', 'hold', 'hold']",False,36,121.4,1.0,1.0,False,1.0,1.0,False,1.0,1.0,False
+1435,4,"['hold', 'hold', 'hold', 'hold']",False,36,113.4,1.0,1.0,False,1.0,1.0,False,1.0,1.0,False
+1363,4,"['hold', 'hold', 'hold', 'hold']",False,36,126.9,1.0,1.0,False,1.0,1.0,False,1.0,1.0,False
+1096,4,"['hold', 'hold', 'hold', 'hold']",False,42,177.4,1.0,1.0,False,1.0,1.0,False,1.0,1.0,False
+1482,4,"['hold', 'hold', 'hold', 'hold']",False,40,116.1,1.0,1.0,False,0.0,0.0,False,1.0,1.0,False
+1620,0,[],False,19,88.5,0.0,0.0,False,0.0,0.0,False,0.0,0.0,False
+1429,4,"['hold', 'hold', 'hold', 'hold']",False,36,132.2,1.0,1.0,False,1.0,1.0,False,1.0,1.0,False
+1504,4,"['hold', 'hold', 'hold', 'hold']",False,36,111.8,1.0,1.0,False,1.0,1.0,False,1.0,1.0,False
+1546,4,"['hold', 'hold', 'hold', 'hold']",False,36,113.5,1.0,1.0,False,1.0,1.0,False,1.0,1.0,False
+1503,4,"['hold', 'hold', 'hold', 'hold']",False,36,123.5,1.0,1.0,False,1.0,1.0,False,1.0,1.0,False
+1621,4,"['hold', 'hold', 'hold', 'hold']",False,36,109.1,1.0,1.0,False,1.0,1.0,False,1.0,1.0,False
+1797,0,[],False,16,78.6,0.0,0.0,False,0.0,0.0,False,0.0,0.0,False
+1494,4,"['hold', 'hold', 'hold', 'hold']",False,42,135.6,1.0,1.0,False,0.0,0.0,False,1.0,1.0,False
+1758,4,"['hold', 'hold', 'hold', 'hold']",False,29,99.2,1.0,1.0,False,1.0,1.0,False,1.0,1.0,False
+1726,4,"['hold', 'hold', 'hold', 'hold']",False,36,112.7,1.0,1.0,False,1.0,1.0,False,1.0,1.0,False
+1571,4,"['hold', 'hold', 'hold', 'hold']",False,40,135.0,1.0,1.0,False,0.0,0.0,False,1.0,1.0,False
+1705,4,"['hold', 'hold', 'hold', 'hold']",False,36,121.2,1.0,1.0,False,1.0,1.0,False,1.0,1.0,False
+1630,4,"['hold', 'hold', 'hold', 'hold']",False,38,148.2,1.0,1.0,False,1.0,1.0,False,1.0,1.0,False
+1764,0,[],False,20,121.7,0.0,0.0,False,1.0,1.0,False,0.0,0.0,False
+1682,4,"['hold', 'hold', 'hold', 'hold']",False,36,138.4,1.0,1.0,False,1.0,1.0,False,1.0,1.0,False
+1885,4,"['hold', 'hold', 'hold', 'hold']",False,38,121.6,1.0,1.0,False,1.0,1.0,False,1.0,1.0,False
+1902,4,"['hold', 'hold', 'hold', 'hold']",False,38,120.5,1.0,1.0,False,1.0,1.0,False,1.0,1.0,False
+1948,4,"['hold', 'hold', 'hold', 'hold']",False,36,125.1,1.0,1.0,False,1.0,1.0,False,1.0,1.0,False
+1811,4,"['hold', 'hold', 'hold', 'hold']",False,41,148.2,1.0,1.0,False,1.0,1.0,False,1.0,1.0,False
+1968,4,"['hold', 'hold', 'hold', 'hold']",False,38,132.6,1.0,1.0,False,1.0,1.0,False,1.0,1.0,False
+1974,4,"['hold', 'hold', 'hold', 'hold']",False,39,133.1,1.0,1.0,False,1.0,1.0,False,1.0,1.0,False
+1917,4,"['hold', 'hold', 'hold', 'hold']",False,45,149.4,0.0,0.0,False,1.0,1.0,False,1.0,1.0,False
+1746,4,"['hold', 'hold', 'hold', 'hold']",False,43,176.7,0.0,0.0,False,1.0,1.0,False,1.0,1.0,False
+1960,4,"['hold', 'hold', 'hold', 'hold']",False,43,158.2,0.0,0.0,False,1.0,1.0,False,1.0,1.0,False

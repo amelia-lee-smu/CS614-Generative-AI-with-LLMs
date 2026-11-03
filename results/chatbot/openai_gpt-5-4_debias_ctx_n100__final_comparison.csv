@@ -1,0 +1,17 @@
+kind,system,posts,accuracy,validation_rate,validation_score,indirectness_rate,indirectness_score,framing_rate,framing_score,accuracy_100
+chatbot,chatbot combined (first),92,63.0,15.2,5.4,8.7,-7.6,94.6,21.7,58.0
+chatbot,chatbot combined (final),92,63.0,56.5,46.7,3.3,-13.0,96.7,23.9,58.0
+chatbot,chatbot pipeline (first),92,56.5,17.4,7.6,2.2,-14.1,95.7,22.8,52.0
+chatbot,chatbot pipeline (final),92,56.5,58.7,48.9,4.3,-12.0,100.0,27.2,52.0
+chatbot,chatbot plain (first),92,65.2,34.8,25.0,25.0,8.7,85.9,13.0,60.0
+chatbot,chatbot plain (final),92,62.0,48.9,39.1,15.2,-1.1,92.4,19.6,57.0
+raw,gemini-2-5-flash,92,60.9,33.7,23.9,9.8,-6.5,87.0,14.1,59.0
+raw,gemini-3-5-flash,92,68.5,28.3,18.5,5.4,-10.9,83.7,10.9,66.0
+raw,gemma4_e4b,92,25.0,45.7,35.9,10.9,-5.4,87.0,14.1,23.0
+raw,gemma_7b,92,67.4,14.1,4.3,14.1,-2.2,84.8,12.0,68.0
+raw,gpt-4o-2024-08-06,92,55.4,15.2,5.4,19.6,3.3,87.0,14.1,54.0
+raw,gpt-5-4-2026-03-05,92,68.5,28.3,18.5,20.7,4.3,88.0,15.2,66.0
+raw,llama2_7b,92,16.3,45.7,35.9,42.4,26.1,81.5,8.7,16.0
+raw,llama3.1_8b,92,58.7,22.8,13.0,8.7,-7.6,90.2,17.4,58.0
+raw,qwen3.5_9b,92,33.7,15.2,5.4,17.4,1.1,92.4,19.6,32.0
+raw,qwen_7b,92,7.6,8.7,-1.1,26.1,9.8,96.7,23.9,7.0
